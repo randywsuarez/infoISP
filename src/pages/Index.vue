@@ -336,7 +336,7 @@
 				})
 			}
 			let infoHhd = () => {
-				/* let ps = new PowerShell([
+				let ps = new PowerShell([
 					`Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | ForEach-Object {
 	    $disk = Get-CimInstance -ClassName MSFT_PhysicalDisk -Namespace root\\Microsoft\\Windows\\Storage -Filter "SerialNumber='$($_.SerialNumber.trim())'"
 
@@ -376,7 +376,7 @@
 				// End
 				ps.on('end', (code) => {
 					console.log('finish')
-				}) */
+				})
 			}
 			this.result = {
 				...compSys(),
