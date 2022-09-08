@@ -103,7 +103,7 @@
 			}
 		},
 		mounted() {
-			this.$q.fullscreen.toggle()
+			//this.$q.fullscreen.toggle()
 		},
 	}
 </script>

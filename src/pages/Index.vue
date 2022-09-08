@@ -335,7 +335,7 @@
 					// Do Something on end
 				})
 			}
-			let infoHhd = () => {
+			/* let infoHhd = () => {
 				let ps = new PowerShell([
 					`Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | ForEach-Object {
 	    $disk = Get-CimInstance -ClassName MSFT_PhysicalDisk -Namespace root\\Microsoft\\Windows\\Storage -Filter "SerialNumber='$($_.SerialNumber.trim())'"
@@ -377,13 +377,13 @@
 				ps.on('end', (code) => {
 					console.log('finish')
 				})
-			}
+			} */
 			this.result = {
 				...compSys(),
 				...vdCtrl(),
 				...memRam(),
 				...infoCpu(),
-				...infoHhd(),
+				//...infoHhd(),
 			}
 			return setTimeout(() => {
 				this.result = this.form
@@ -409,50 +409,71 @@
 			}, 10000)
 		},
 		methods: {
-			async srHdd() {
-				console.log('srHDD')
-				return new Promise((resolve) => {
-					let ps = new PowerShell([
-						`Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | ForEach-Object {
-	    $disk = Get-CimInstance -ClassName MSFT_PhysicalDisk -Namespace root\\Microsoft\\Windows\\Storage -Filter "SerialNumber='$($_.SerialNumber.trim())'"
+			async rsConvert(bytes, decimals = 2) {
+				if (bytes === 0) return '0 Bytes'
+				const k = 1024
+				const dm = decimals < 0 ? 0 : decimals
+				const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+				const i = Math.floor(Math.log(bytes) / Math.log(k))
+				return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+			},
+			async hdd() {
+				return new Promise(async (resolve) => {
+					// Start the process
+					let ps = await new PowerShell(
+						`Get-CimInstance -ClassName MSFT_PhysicalDisk -Namespace root\\Microsoft\\Windows\\Storage | Select SerialNumber, MediaType | convertTo-Json;
+	           Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | Select Caption, Size, Model, serialNumber | convertTo-Json`
+					)
 
-	    foreach($partition in $_ | Get-CimAssociatedInstance -ResultClassName Win32_DiskPartition){
-	        foreach($logicaldisk in $partition | Get-CimAssociatedInstance -ResultClassName Win32_LogicalDisk){
-	            [PSCustomObject]@{
-	                DiskModel     = $_.Model
-	                DiskSize      = $_.Size
-	                MediaType     = $disk.MediaType
-	            }
-	        }
-	    }
-	} | ConvertTo-Json`,
-					])
+					// Handle process errors (e.g. powershell not found)
 					ps.on('error', (err) => {
 						console.error(err)
 					})
 
 					// Stdout
-					console.log('ps: ', ps)
 					ps.on('output', async (data) => {
-						let info = await JSON.parse(data)
+						//console.log(data)
+						let cadena = data
+						let expresion = /\[([^\]]+)]/gm
+						let info = await cadena.match(expresion)
+						let master = await JSON.parse(info[0])
+						let detall = info[1]
+						detall = await JSON.parse(detall)
+						console.log(typeof detall, detall)
+						//console.log(typeof master, master)
+						//console.log(typeof detall, detall)
 						let n = 1
-						for (let x in info) {
-							if (info[x].MediaType == 4 || info[x].MediaType == 3) {
-								this.form[`storage${n}`] = `${info[x].DiskModel} ${info[x].MediaType} ${convert(
-									info[x].DiskSize
-								)}`
-								n++
+						let t = ''
+						master = await master.filter((v) => v.MediaType == 3 || v.MediaType == 4)
+						console.log('master: ', master.length)
+						for (let x = 0; x < master.length; x++) {
+							let s = master[x].SerialNumber
+							console.log(s, detall[1])
+							//detall = detall.find(async (v) => v.serialNumber == s)
+							for (let a = 0; a < detall.length; a++) {
+								if (s == detall[a].serialNumber) {
+									console.log(detall[a].serialNumber)
+									let type = detall[a].MediaType == 3 ? 'HDD' : 'SDD'
+									console.log('detall: ', a, typeof detall[a], detall[a])
+									this.form[`storage${n}`] = `${detall[a].Model} ${type} ${await this.rsConvert(
+										detall[a].Size
+									)}`
+									await console.log(`${detall[a].Model} ${type} ${await this.rsConvert(detall[a].Size)}`)
+									n++
+								}
 							}
 						}
-						resolve(true)
 					})
+
+					// Stderr
 					ps.on('error-output', (data) => {
 						console.error(data)
 					})
 
 					// End
 					ps.on('end', (code) => {
-						console.log('finish')
+						// Do Something on end
+						resolve('randy')
 					})
 				})
 			},
@@ -601,7 +622,7 @@
 			if (today.valueOf() > limit.valueOf()) this.persistent = true
 			//await this.license()
 			//JsBarcode('#seial', '12345670')
-			this.document.addEventListener('keyup', (event) => {
+			/* this.document.addEventListener('keyup', (event) => {
 				if (event.code == 'control' && event.code == 'KeyS') {
 					console.log('guarda')
 				}
@@ -610,9 +631,9 @@
 
 				console.log('keyup event, keyValue: ' + keyValue)
 				console.log('keyup event, codeValue: ' + codeValue)
-			})
-			/* let test = await this.srHdd()
-			console.log('test: ', test) */
+			}) */
+			let test = await this.hdd()
+			console.log('test: ', test)
 
 			this.$forceUpdate()
 		},
