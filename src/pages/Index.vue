@@ -107,7 +107,13 @@
 							label="Open Troubleshoot settings"
 							color="primary"
 							class="col col-12 self-end q-mt-md"
-							href="ms-settings:troubleshoot?activation"
+							href="ms-settings:activation"
+						/>
+						<q-btn
+							label="Shutdown"
+							color="primary"
+							class="col col-12 self-end q-mt-md"
+							@click="shutdown()"
 						/>
 					</q-card-section>
 				</q-card>
@@ -126,6 +132,96 @@
 				<q-card-actions align="right" class="bg-white text-teal"> </q-card-actions>
 			</q-card>
 		</q-dialog>
+		<q-dialog v-model="list">
+			<q-card>
+				<q-card-section class="row items-center q-pb-none">
+					<div class="text-h6">Loading Information</div>
+					<q-space />
+					<!-- <q-btn icon="close" flat round dense v-close-popup /> -->
+				</q-card-section>
+
+				<q-card-section>
+					<q-list bordered>
+						<q-item>
+							<q-item-section>Hard Drive Information</q-item-section>
+							<q-item-section avatar v-if="!result.hdd">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+						<q-item>
+							<q-item-section>Checking Windows License</q-item-section>
+							<q-item-section avatar v-if="!result.license">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+						<q-item v-if="act">
+							<q-item-section>Activating Windows</q-item-section>
+							<q-item-section avatar v-if="!result.license">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+						<q-item>
+							<q-item-section>Computer Information</q-item-section>
+							<q-item-section avatar v-if="!result.compSys">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+						<q-item>
+							<q-item-section>GPU Information</q-item-section>
+							<q-item-section avatar v-if="!result.vdCtrl">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+						<q-item>
+							<q-item-section>Ram Memory Information</q-item-section>
+							<q-item-section avatar v-if="!result.memRam">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+						<q-item>
+							<q-item-section>CPU Information</q-item-section>
+							<q-item-section avatar v-if="!result.infoCpu">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+					</q-list>
+				</q-card-section>
+			</q-card>
+		</q-dialog>
+		<q-dialog v-model="confirm" persistent>
+			<q-card>
+				<q-card-section class="row items-center">
+					<q-avatar icon="power_settings_new" color="primary" text-color="white" />
+					<span class="q-ml-sm">Do you want to turn off the computer?</span>
+				</q-card-section>
+
+				<q-card-actions align="right">
+					<q-btn flat label="No" color="Red" v-close-popup />
+					<q-btn flat label="Yes" color="primary" @click="shutdown()" />
+				</q-card-actions>
+			</q-card>
+		</q-dialog>
 	</q-page>
 </template>
 
@@ -141,9 +237,18 @@
 		name: 'PageIndex',
 		data() {
 			return {
-				result: {},
+				list: true,
+				act: false,
+				confirm: false,
 				form: {},
-				result: {},
+				result: {
+					compSys: false,
+					vdCtrl: false,
+					memRam: false,
+					infoCpu: false,
+					hdd: false,
+					act: false,
+				},
 				window: false,
 				barcode: false,
 				persistent: false,
@@ -183,6 +288,7 @@
 			this.result.infoCpu = await this.infoCpu()
 			await this.fnBarcode()
 			console.log('result: ', this.result)
+			this.list = false
 			Loading.hide()
 		},
 		methods: {
@@ -327,7 +433,7 @@
 					// Start the process
 					let ps = await new PowerShell(
 						`Get-CimInstance -ClassName MSFT_PhysicalDisk -Namespace root\\Microsoft\\Windows\\Storage | Select SerialNumber, MediaType | convertTo-Json;
-	           Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | Select Caption, Size, Model, serialNumber | convertTo-Json`
+		           Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | Select Caption, Size, Model, serialNumber | convertTo-Json`
 					)
 
 					// Handle process errors (e.g. powershell not found)
@@ -443,7 +549,8 @@
 						setTimeout(() => {
 							Loading.hide()
 							timer = void 0
-						}, 5000)
+						}, 3000)
+						this.confirm = true
 					})
 					.catch((err) => {
 						console.error(err)
@@ -462,10 +569,11 @@
 				Loading.hide()
 			},
 			async actdWin() {
-				Loading.show({
-					message: 'Activating Windows...',
-				})
+				/* Loading.show({
+						message: 'Activating Windows...',
+					}) */
 				return new Promise(async (resolve) => {
+					this.act = true
 					let ps = new PowerShell(['slmgr /ato'])
 
 					// Handle process errors (e.g. powershell not found)
@@ -476,7 +584,7 @@
 					// Stdout
 					ps.on('output', async (data) => {
 						await this.license()
-						Loading.hide()
+						/* Loading.hide() */
 						resolve(true)
 					})
 					ps.on('error-output', (data) => {
@@ -520,12 +628,41 @@
 							//this.license()
 						}
 						if (!again) this.license()
+						this.result.act = again
 						this.loadingL = false
 						console.log(this.window)
 						resolve(true)
 					})
 					ps.on('error-output', (data) => {
 						console.error(data)
+					})
+
+					// End
+					ps.on('end', (code) => {
+						// Do Something on end
+					})
+				})
+			},
+			async shutdown() {
+				/* Loading.show({
+						message: 'Activating Windows...',
+					}) */
+				return new Promise(async (resolve) => {
+					this.act = true
+					let ps = new PowerShell(['Stop-Computer -ComputerName localhost'])
+
+					// Handle process errors (e.g. powershell not found)
+					ps.on('error', (err) => {
+						console.error(err)
+					})
+
+					// Stdout
+					ps.on('output', async (data) => {
+						resolve(true)
+					})
+					ps.on('error-output', (data) => {
+						console.error(data)
+						resolve(false)
 					})
 
 					// End
