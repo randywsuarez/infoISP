@@ -141,6 +141,7 @@
 		name: 'PageIndex',
 		data() {
 			return {
+				result: {},
 				form: {},
 				result: {},
 				window: false,
@@ -165,7 +166,7 @@
 				serial: { required },
 			},
 		},
-		created() {
+		async created() {
 			Loading.show()
 			window.addEventListener('keypress', (event) => {
 				if (event.keyCode === 13) {
@@ -174,247 +175,15 @@
 					// your code to Run
 				}
 			})
-
-			this.license()
-			let serial = 'randy'
-			var rsValue = (lines, property, separator, trimmed, lineMatch) => {
-				separator = separator || ':'
-				property = property.toLowerCase()
-				trimmed = trimmed || false
-				lineMatch = lineMatch || false
-				for (let i = 0; i < lines.length; i++) {
-					let line = lines[i].toLowerCase().replace(/\t/g, '')
-					if (trimmed) {
-						line = line.trim()
-					}
-					if (line.startsWith(property) && (lineMatch ? line.match(property + separator) : true)) {
-						const parts = trimmed ? lines[i].trim().split(separator) : lines[i].split(separator)
-						if (parts.length >= 2) {
-							parts.shift()
-							return parts.join(separator).trim()
-						} else {
-							return ''
-						}
-					}
-				}
-				return ''
-			}
-			let convert = (bytes, decimals = 2) => {
-				if (bytes === 0) return '0 Bytes'
-				const k = 1024
-				const dm = decimals < 0 ? 0 : decimals
-				const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-				const i = Math.floor(Math.log(bytes) / Math.log(k))
-				return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
-			}
-			// win32_computerSystem
-			let compSys = () => {
-				let r = {}
-				let ps = new PowerShell([
-					'Get-WmiObject win32_computerSystem | Select-Object SystemSKUNumber, Model | fl; Get-WmiObject Win32_computerSystemProduct | select IdentifyingNumber | fl; Get-CimInstance Win32_OperatingSystem | select Caption |fl',
-				])
-
-				// Handle process errors (e.g. powershell not found)
-				ps.on('error', (err) => {
-					console.error(err)
-				})
-
-				// Stdout
-				ps.on('output', (data) => {
-					data = data.toString().split('\r\n')
-					this.form.sku = rsValue(data, 'SystemSKUNumber', ':')
-					this.form.product = rsValue(data, 'Model', ':')
-					this.form.serial = rsValue(data, 'IdentifyingNumber', ':')
-					this.form.winver = rsValue(data, 'Caption', ':')
-					serial = rsValue(data, 'IdentifyingNumber', ':')
-				})
-				ps.on('error-output', (data) => {
-					console.error(data)
-				})
-
-				// End
-				ps.on('end', (code) => {
-					// Do Something on end
-				})
-			}
-			let vdCtrl = () => {
-				let r = {}
-				// Win32_VideoController
-				let ps = new PowerShell([
-					'Get-WmiObject Win32_VideoController | Select Description, AdapterRAM | ConvertTo-Json',
-				])
-
-				// Handle process errors (e.g. powershell not found)
-				ps.on('error', (err) => {
-					console.error(err)
-				})
-
-				// Stdout
-
-				ps.on('output', async (data) => {
-					let info = await JSON.parse(data)
-					let n = 1
-					console.log('vd: ', Array.isArray(info))
-					if (Array.isArray(info))
-						for (let x in info) {
-							this.form[`gpu${n}`] = `${info[x].Description} ${convert(info[x].AdapterRAM)}`
-							n++
-						}
-					else this.form[`gpu1`] = `${info.Description} ${convert(info.AdapterRAM)}`
-				})
-
-				// Stderr
-				ps.on('error-output', (data) => {
-					console.error(data)
-				})
-
-				// End
-				ps.on('end', (code) => {
-					// return r;
-					// Do Something on end
-				})
-			}
-			let memRam = () => {
-				let r = {}
-				// Win32_VideoController
-				let ps = new PowerShell([
-					'Get-CimInstance win32_physicalmemory | Select Manufacturer, Capacity, Speed | convertTo-Json',
-				])
-
-				// Handle process errors (e.g. powershell not found)
-				ps.on('error', (err) => {
-					console.error(err)
-				})
-
-				// Stdout
-				ps.on('output', async (data) => {
-					let info = await JSON.parse(data)
-					let n = 1
-					let total = 0
-					console.log('vd: ', Array.isArray(info))
-					if (Array.isArray(info))
-						for (let x in info) {
-							total += info[x].Capacity
-						}
-					else total = info.Capacity
-					this.form[`memoryRam`] = Array.isArray(info)
-						? `${info[0].Manufacturer} ${convert(total)} ${info[0].Speed} GHz`
-						: `${info.Manufacturer} ${convert(total)} ${info.Speed} GHz`
-				})
-				ps.on('error-output', (data) => {
-					console.error(data)
-				})
-
-				// End
-				ps.on('end', (code) => {
-					console.log('finish')
-					// Do Something on end
-				})
-			}
-			let infoCpu = () => {
-				let r = {}
-				// Win32_VideoController
-				let ps = new PowerShell([
-					'Get-CimInstance Win32_Processor | Select Name, NumberOfCores, CurrentClockSpeed | fl',
-				])
-
-				// Handle process errors (e.g. powershell not found)
-				ps.on('error', (err) => {
-					console.error(err)
-				})
-
-				// Stdout
-				ps.on('output', (data) => {
-					data = data.toString().split('\r\n')
-					this.form.cpu = rsValue(data, 'Name', ':')
-					this.form.cpuSpeed = `${(rsValue(data, 'CurrentClockSpeed', ':') / 1000).toFixed(
-						2
-					)} GHz, ${rsValue(data, 'NumberOfCores', ':')} Cores`
-				})
-				//(rsValue(data,"Capacity",":") / (1000 * 1000 * 1000)).toFixed(2);
-				// Stderr
-				ps.on('error-output', (data) => {
-					console.error(data)
-				})
-
-				// End
-				ps.on('end', (code) => {
-					console.log('finish')
-					// Do Something on end
-				})
-			}
-			/* let infoHhd = () => {
-				let ps = new PowerShell([
-					`Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | ForEach-Object {
-	    $disk = Get-CimInstance -ClassName MSFT_PhysicalDisk -Namespace root\\Microsoft\\Windows\\Storage -Filter "SerialNumber='$($_.SerialNumber.trim())'"
-
-	    foreach($partition in $_ | Get-CimAssociatedInstance -ResultClassName Win32_DiskPartition){
-	        foreach($logicaldisk in $partition | Get-CimAssociatedInstance -ResultClassName Win32_LogicalDisk){
-	            [PSCustomObject]@{
-	                DiskModel     = $_.Model
-	                DiskSize      = $_.Size
-	                MediaType     = $disk.MediaType
-	            }
-	        }
-	    }
-	} | ConvertTo-Json`,
-				])
-				ps.on('error', (err) => {
-					console.error(err)
-				})
-
-				// Stdout
-				console.log('ps: ', ps)
-				ps.on('output', async (data) => {
-					let info = await JSON.parse(data)
-					let n = 1
-					for (let x in info) {
-						if (info[x].MediaType == 4 || info[x].MediaType == 3) {
-							this.form[`storage${n}`] = `${info[x].DiskModel} ${info[x].MediaType} ${convert(
-								info[x].DiskSize
-							)}`
-							n++
-						}
-					}
-				})
-				ps.on('error-output', (data) => {
-					console.error(data)
-				})
-
-				// End
-				ps.on('end', (code) => {
-					console.log('finish')
-				})
-			} */
-			this.result = {
-				...compSys(),
-				...vdCtrl(),
-				...memRam(),
-				...infoCpu(),
-				//...infoHhd(),
-			}
-			return setTimeout(() => {
-				this.result = this.form
-				console.log('result: ', this.result)
-				//JsBarcode('.barcode').init()
-				console.log(serial)
-				Loading.hide()
-				/* this.form.serial = this.result.serial;
-	      this.form.sku = this.result.sku;
-	      this.form.product = this.result.model;
-	      this.form.winver = this.result.winver;
-	      this.form.cpu = this.result.cpu;
-	      this.form.cpuSpeed = this.result.cpuSpeed;
-	      this.form.gpu1 = this.result.gpu1;
-	      if (this.result.hasOwnProperty("gpu2"))
-	        this.form.gpu2 = this.result.gpu2;
-	      this.form.memoryRam = this.result.memoryRam;
-	      this.form.storage1 = this.result.storage1;
-	      if (this.result.hasOwnProperty("storage2"))
-	        this.form.storage2 = this.result.storage2; */
-
-				Loading.hide()
-			}, 10000)
+			this.result.hdd = await this.hdd()
+			this.result.license = await this.license()
+			this.result.compSys = await this.compSys()
+			this.result.vdCtrl = await this.vdCtrl()
+			this.result.memRam = await this.memRam()
+			this.result.infoCpu = await this.infoCpu()
+			await this.fnBarcode()
+			console.log('result: ', this.result)
+			Loading.hide()
 		},
 		methods: {
 			async rsValue(lines, property, separator, trimmed, lineMatch) {
@@ -448,138 +217,109 @@
 				return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 			},
 			async compSys() {
-				let r = {}
-				let ps = new PowerShell([
-					'Get-WmiObject win32_computerSystem | Select-Object SystemSKUNumber, Model | fl; Get-WmiObject Win32_computerSystemProduct | select IdentifyingNumber | fl; Get-CimInstance Win32_OperatingSystem | select Caption |fl',
-				])
-
-				// Handle process errors (e.g. powershell not found)
-				ps.on('error', (err) => {
-					console.error(err)
-				})
-
-				// Stdout
-				ps.on('output', (data) => {
-					data = data.toString().split('\r\n')
-					this.form.sku = rsValue(data, 'SystemSKUNumber', ':')
-					this.form.product = rsValue(data, 'Model', ':')
-					this.form.serial = rsValue(data, 'IdentifyingNumber', ':')
-					this.form.winver = rsValue(data, 'Caption', ':')
-					serial = rsValue(data, 'IdentifyingNumber', ':')
-				})
-				ps.on('error-output', (data) => {
-					console.error(data)
-				})
-
-				// End
-				ps.on('end', (code) => {
-					// Do Something on end
+				return new Promise(async (resolve) => {
+					let ps = new PowerShell([
+						'Get-WmiObject win32_computerSystem | Select-Object SystemSKUNumber, Model | fl; Get-WmiObject Win32_computerSystemProduct | select IdentifyingNumber | fl; Get-CimInstance Win32_OperatingSystem | select Caption |fl',
+					])
+					ps.on('error', (err) => {
+						console.error(err)
+					})
+					ps.on('output', async (data) => {
+						data = data.toString().split('\r\n')
+						this.form.sku = await this.rsValue(data, 'SystemSKUNumber', ':')
+						this.form.product = await this.rsValue(data, 'Model', ':')
+						this.form.serial = await this.rsValue(data, 'IdentifyingNumber', ':')
+						this.form.winver = await this.rsValue(data, 'Caption', ':')
+						resolve(true)
+					})
+					ps.on('error-output', (data) => {
+						console.error(data)
+					})
+					ps.on('end', (code) => {
+						// Do Something on end
+					})
 				})
 			},
 			async vdCtrl() {
-				let r = {}
-				// Win32_VideoController
-				let ps = new PowerShell([
-					'Get-WmiObject Win32_VideoController | Select Description, AdapterRAM | ConvertTo-Json',
-				])
-
-				// Handle process errors (e.g. powershell not found)
-				ps.on('error', (err) => {
-					console.error(err)
-				})
-
-				// Stdout
-
-				ps.on('output', async (data) => {
-					let info = await JSON.parse(data)
-					let n = 1
-					console.log('vd: ', Array.isArray(info))
-					if (Array.isArray(info))
-						for (let x in info) {
-							this.form[`gpu${n}`] = `${info[x].Description} ${convert(info[x].AdapterRAM)}`
-							n++
-						}
-					else this.form[`gpu1`] = `${info.Description} ${convert(info.AdapterRAM)}`
-				})
-
-				// Stderr
-				ps.on('error-output', (data) => {
-					console.error(data)
-				})
-
-				// End
-				ps.on('end', (code) => {
-					// return r;
-					// Do Something on end
+				return new Promise(async (resolve) => {
+					let ps = new PowerShell([
+						'Get-WmiObject Win32_VideoController | Select Description, AdapterRAM | ConvertTo-Json',
+					])
+					ps.on('error', (err) => {
+						console.error(err)
+					})
+					ps.on('output', async (data) => {
+						let info = await JSON.parse(data)
+						let n = 1
+						console.log('vd: ', Array.isArray(info))
+						if (Array.isArray(info))
+							for (let x in info) {
+								this.form[`gpu${n}`] = `${info[x].Description} ${await this.rsConvert(info[x].AdapterRAM)}`
+								n++
+							}
+						else this.form[`gpu1`] = `${info.Description} ${await this.rsConvert(info.AdapterRAM)}`
+						resolve(true)
+					})
+					ps.on('error-output', (data) => {
+						console.error(data)
+					})
+					ps.on('end', (code) => {})
 				})
 			},
 			async memRam() {
-				let r = {}
-				// Win32_VideoController
-				let ps = new PowerShell([
-					'Get-CimInstance win32_physicalmemory | Select Manufacturer, Capacity, Speed | convertTo-Json',
-				])
-
-				// Handle process errors (e.g. powershell not found)
-				ps.on('error', (err) => {
-					console.error(err)
-				})
-
-				// Stdout
-				ps.on('output', async (data) => {
-					let info = await JSON.parse(data)
-					let n = 1
-					let total = 0
-					console.log('vd: ', Array.isArray(info))
-					if (Array.isArray(info))
-						for (let x in info) {
-							total += info[x].Capacity
-						}
-					else total = info.Capacity
-					this.form[`memoryRam`] = Array.isArray(info)
-						? `${info[0].Manufacturer} ${convert(total)} ${info[0].Speed} GHz`
-						: `${info.Manufacturer} ${convert(total)} ${info.Speed} GHz`
-				})
-				ps.on('error-output', (data) => {
-					console.error(data)
-				})
-
-				// End
-				ps.on('end', (code) => {
-					console.log('finish')
-					// Do Something on end
+				return new Promise(async (resolve) => {
+					let ps = new PowerShell([
+						'Get-CimInstance win32_physicalmemory | Select Manufacturer, Capacity, Speed | convertTo-Json',
+					])
+					ps.on('error', (err) => {
+						console.error(err)
+					})
+					ps.on('output', async (data) => {
+						let info = await JSON.parse(data)
+						let n = 1
+						let total = 0
+						console.log('vd: ', Array.isArray(info))
+						if (Array.isArray(info))
+							for (let x in info) {
+								total += info[x].Capacity
+							}
+						else total = info.Capacity
+						this.form[`memoryRam`] = Array.isArray(info)
+							? `${info[0].Manufacturer} ${await this.rsConvert(total)} ${info[0].Speed} GHz`
+							: `${info.Manufacturer} ${await this.rsConvert(total)} ${info.Speed} GHz`
+						resolve(true)
+					})
+					ps.on('error-output', (data) => {
+						console.error(data)
+					})
+					ps.on('end', (code) => {
+						//console.log('finish')
+					})
 				})
 			},
 			async infoCpu() {
-				let r = {}
-				// Win32_VideoController
-				let ps = new PowerShell([
-					'Get-CimInstance Win32_Processor | Select Name, NumberOfCores, CurrentClockSpeed | fl',
-				])
-
-				// Handle process errors (e.g. powershell not found)
-				ps.on('error', (err) => {
-					console.error(err)
-				})
-
-				// Stdout
-				ps.on('output', (data) => {
-					data = data.toString().split('\r\n')
-					this.form.cpu = rsValue(data, 'Name', ':')
-					this.form.cpuSpeed = `${(rsValue(data, 'CurrentClockSpeed', ':') / 1000).toFixed(
-						2
-					)} GHz, ${rsValue(data, 'NumberOfCores', ':')} Cores`
-				})
-				//(rsValue(data,"Capacity",":") / (1000 * 1000 * 1000)).toFixed(2);
-				// Stderr
-				ps.on('error-output', (data) => {
-					console.error(data)
-				})
-
-				// End
-				ps.on('end', (code) => {
-					console.log('finish')
-					// Do Something on end
+				return new Promise(async (resolve) => {
+					let ps = new PowerShell([
+						'Get-CimInstance Win32_Processor | Select Name, NumberOfCores, CurrentClockSpeed | fl',
+					])
+					ps.on('error', (err) => {
+						console.error(err)
+					})
+					ps.on('output', async (data) => {
+						data = data.toString().split('\r\n')
+						this.form.cpu = await this.rsValue(data, 'Name', ':')
+						this.form.cpuSpeed = `${((await this.rsValue(data, 'CurrentClockSpeed', ':')) / 1000).toFixed(
+							2
+						)} GHz, ${await this.rsValue(data, 'NumberOfCores', ':')} Cores`
+						resolve(true)
+					})
+					ps.on('error-output', (data) => {
+						console.error(data)
+					})
+					ps.on('end', (code) => {
+						//console.log('finish')
+						// Do Something on end
+					})
 				})
 			},
 			async hdd() {
@@ -628,7 +368,7 @@
 								}
 							}
 						}
-						resolve('randy')
+						resolve(true)
 					})
 
 					// Stderr
@@ -722,6 +462,9 @@
 				Loading.hide()
 			},
 			async actdWin() {
+				Loading.show({
+					message: 'Activating Windows...',
+				})
 				return new Promise(async (resolve) => {
 					let ps = new PowerShell(['slmgr /ato'])
 
@@ -731,12 +474,14 @@
 					})
 
 					// Stdout
-					ps.on('output', (data) => {
-						this.license()
-						resolve()
+					ps.on('output', async (data) => {
+						await this.license()
+						Loading.hide()
+						resolve(true)
 					})
 					ps.on('error-output', (data) => {
 						console.error(data)
+						resolve(false)
 					})
 
 					// End
@@ -747,7 +492,8 @@
 			},
 			async license() {
 				this.loadingL = true
-				process.nextTick(() => {
+				let again = true
+				return new Promise(async (resolve) => {
 					let ps = new PowerShell([
 						'Get-CimInstance SoftwareLicensingProduct | select Name, LicenseStatus, PartialProductKey | ConvertTo-Json',
 					])
@@ -769,10 +515,14 @@
 							}
 						}
 						if (!this.numberCheck) {
-							await this.actdWin()
-							this.license()
-						} else this.loadingL = false
+							console.log('Activar')
+							again = await this.actdWin()
+							//this.license()
+						}
+						if (!again) this.license()
+						this.loadingL = false
 						console.log(this.window)
+						resolve(true)
 					})
 					ps.on('error-output', (data) => {
 						console.error(data)
@@ -789,7 +539,7 @@
 					format: 'CODE128',
 					lineColor: '#000',
 					width: 1,
-					height: 50,
+					height: 100,
 					displayValue: true,
 					//text: this.form.serial,
 					textAlign: 'center',
@@ -799,7 +549,7 @@
 					format: 'CODE128',
 					lineColor: '#000',
 					width: 1,
-					height: 50,
+					height: 100,
 					displayValue: true,
 					//text: this.form.sku,
 					textAlign: 'center',
@@ -812,21 +562,6 @@
 			let limit = new Date(2022, 12, 31)
 			let today = new Date()
 			if (today.valueOf() > limit.valueOf()) this.persistent = true
-			//await this.license()
-			//JsBarcode('#seial', '12345670')
-			/* this.document.addEventListener('keyup', (event) => {
-				if (event.code == 'control' && event.code == 'KeyS') {
-					console.log('guarda')
-				}
-				var keyValue = event.key
-				var codeValue = event.code
-
-				console.log('keyup event, keyValue: ' + keyValue)
-				console.log('keyup event, codeValue: ' + codeValue)
-			}) */
-			let test = await this.hdd()
-			console.log('test: ', test)
-
 			this.$forceUpdate()
 		},
 	}
