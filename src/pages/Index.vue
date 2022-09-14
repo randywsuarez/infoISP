@@ -7,7 +7,6 @@
 					<q-card-section>
 						<div class="text-h6">Description Commercial Laptop</div>
 					</q-card-section>
-
 					<q-card-section class="row col q-pt-none">
 						<div class="col-sm-6 col-xs-12">
 							<q-input outlined v-model="form.sku" label="Product Number" readonly />
@@ -56,17 +55,19 @@
 						<div class="col-sm-6 col-xs-12">
 							<q-input outlined v-model="form.storage1" label="Primary Storage" />
 						</div>
-						<div class="col-sm-6 col-xs-12">
+						<div class="col-sm-6 col-xs-12" v-if="form.hasOwnProperty('storage2')">
 							<q-input outlined v-model="form.storage2" label="Second Storage" />
+						</div>
+						<div class="col-sm-6 col-xs-12" v-if="form.hasOwnProperty('storage3')">
+							<q-input outlined v-model="form.storage3" label="Third Storage" />
 						</div>
 						<div class="col-sm-6 col-xs-12">
 							<q-input outlined v-model="form.memoryRam" label="Memory RAM" />
 						</div>
 						<div class="col-sm-6 col-xs-12">
-							<q-input outlined v-model="form.psu" label="Power Supply" />
-						</div>
-						<div class="col-sm-6 col-xs-12">
 							<q-select
+								v-if="psu"
+								autofocus
 								outlined
 								v-model="form.cooler"
 								:options="type"
@@ -74,6 +75,9 @@
 								emit-value
 								label="Select Cooler System"
 							/>
+						</div>
+						<div class="col-sm-6 col-xs-12">
+							<q-input v-if="psu" outlined v-model="form.psu" label="Power Supply" />
 						</div>
 						<q-btn
 							outline
@@ -143,35 +147,26 @@
 				<q-card-section>
 					<q-list bordered>
 						<q-item>
-							<q-item-section>Hard Drive Information</q-item-section>
-							<q-item-section avatar v-if="!result.hdd">
-								<q-spinner-rings color="red" />
-							</q-item-section>
-							<q-item-section avatar v-else>
-								<q-icon color="primary" name="check_circle" />
-							</q-item-section>
-						</q-item>
-						<q-item>
-							<q-item-section>Checking Windows License</q-item-section>
-							<q-item-section avatar v-if="!result.license">
-								<q-spinner-rings color="red" />
-							</q-item-section>
-							<q-item-section avatar v-else>
-								<q-icon color="primary" name="check_circle" />
-							</q-item-section>
-						</q-item>
-						<q-item v-if="act">
-							<q-item-section>Activating Windows</q-item-section>
-							<q-item-section avatar v-if="!result.license">
-								<q-spinner-rings color="red" />
-							</q-item-section>
-							<q-item-section avatar v-else>
-								<q-icon color="primary" name="check_circle" />
-							</q-item-section>
-						</q-item>
-						<q-item>
 							<q-item-section>Computer Information</q-item-section>
 							<q-item-section avatar v-if="!result.compSys">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+						<q-item>
+							<q-item-section>CPU Information</q-item-section>
+							<q-item-section avatar v-if="!result.infoCpu">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+						<q-item>
+							<q-item-section>Hard Drive Information</q-item-section>
+							<q-item-section avatar v-if="!result.hdd">
 								<q-spinner-rings color="red" />
 							</q-item-section>
 							<q-item-section avatar v-else>
@@ -197,8 +192,17 @@
 							</q-item-section>
 						</q-item>
 						<q-item>
-							<q-item-section>CPU Information</q-item-section>
-							<q-item-section avatar v-if="!result.infoCpu">
+							<q-item-section>Checking Windows License</q-item-section>
+							<q-item-section avatar v-if="!result.license">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
+						<q-item v-if="act">
+							<q-item-section>Activating Windows</q-item-section>
+							<q-item-section avatar v-if="!result.license">
 								<q-spinner-rings color="red" />
 							</q-item-section>
 							<q-item-section avatar v-else>
@@ -240,6 +244,8 @@
 				list: true,
 				act: false,
 				confirm: false,
+				psu: true,
+				touch: false,
 				form: {},
 				result: {
 					compSys: false,
@@ -274,18 +280,38 @@
 		async created() {
 			Loading.show()
 			window.addEventListener('keypress', (event) => {
-				if (event.keyCode === 13) {
-					// key code of the keybord key
+				console.log('event: ', event)
+				if ((event.code === 'KeyS' && event.ctrlKey) || (event.code === 'Enter' && event.repeat)) {
 					this.save()
-					// your code to Run
 				}
 			})
-			this.result.hdd = await this.hdd()
-			this.result.license = await this.license()
-			this.result.compSys = await this.compSys()
-			this.result.vdCtrl = await this.vdCtrl()
-			this.result.memRam = await this.memRam()
-			this.result.infoCpu = await this.infoCpu()
+			for (let x = 0; x < 10; x++) {
+				if (!this.result.compSys) this.result.compSys = await this.compSys()
+				if (!this.result.infoCpu) this.result.infoCpu = await this.infoCpu()
+				if (!this.result.hdd) this.result.hdd = await this.hdd()
+				if (!this.result.vdCtrl) this.result.vdCtrl = await this.vdCtrl()
+				if (!this.result.memRam) this.result.memRam = await this.memRam()
+				if (!this.result.license) this.result.license = await this.license()
+				if (
+					this.result.compSys &&
+					this.result.infoCpu &&
+					this.result.hdd &&
+					this.result.vdCtrl &&
+					this.result.memRam &&
+					this.result.license
+				)
+					break
+			}
+			let regex = /(\W|^)All-in-One|Desktop|Mini|Tower(\W|$)/gm
+			let regTouch = /(\W|^)x360(\W|$)/gm
+			if (regex.test(this.form.product)) {
+				console.log('regex: ', regex.test(this.form.product))
+				this.psu = false
+			}
+			if (regTouch.test(this.form.product)) {
+				console.log('regex: ', regTouch.test(this.form.product))
+				this.touch = true
+			}
 			await this.fnBarcode()
 			console.log('result: ', this.result)
 			this.list = false
@@ -329,6 +355,7 @@
 					])
 					ps.on('error', (err) => {
 						console.error(err)
+						resolve(false)
 					})
 					ps.on('output', async (data) => {
 						data = data.toString().split('\r\n')
@@ -340,6 +367,7 @@
 					})
 					ps.on('error-output', (data) => {
 						console.error(data)
+						resolve(false)
 					})
 					ps.on('end', (code) => {
 						// Do Something on end
@@ -353,6 +381,7 @@
 					])
 					ps.on('error', (err) => {
 						console.error(err)
+						resolve(false)
 					})
 					ps.on('output', async (data) => {
 						let info = await JSON.parse(data)
@@ -368,6 +397,7 @@
 					})
 					ps.on('error-output', (data) => {
 						console.error(data)
+						resolve(false)
 					})
 					ps.on('end', (code) => {})
 				})
@@ -379,6 +409,7 @@
 					])
 					ps.on('error', (err) => {
 						console.error(err)
+						resolve(false)
 					})
 					ps.on('output', async (data) => {
 						let info = await JSON.parse(data)
@@ -397,6 +428,7 @@
 					})
 					ps.on('error-output', (data) => {
 						console.error(data)
+						resolve(false)
 					})
 					ps.on('end', (code) => {
 						//console.log('finish')
@@ -410,6 +442,7 @@
 					])
 					ps.on('error', (err) => {
 						console.error(err)
+						resolve(false)
 					})
 					ps.on('output', async (data) => {
 						data = data.toString().split('\r\n')
@@ -421,6 +454,7 @@
 					})
 					ps.on('error-output', (data) => {
 						console.error(data)
+						resolve(false)
 					})
 					ps.on('end', (code) => {
 						//console.log('finish')
@@ -439,6 +473,7 @@
 					// Handle process errors (e.g. powershell not found)
 					ps.on('error', (err) => {
 						console.error(err)
+						resolve(false)
 					})
 
 					// Stdout
@@ -480,6 +515,7 @@
 					// Stderr
 					ps.on('error-output', (data) => {
 						console.error(data)
+						resolve(false)
 					})
 
 					// End
@@ -537,7 +573,6 @@
 				}
 
 				fetch('http://172.16.1.10/inv/add_details.py', options)
-					//.then((response) => response.json())
 					.then((response) => {
 						Loading.show({
 							spinner: QSpinnerHourglass,
@@ -549,8 +584,8 @@
 						setTimeout(() => {
 							Loading.hide()
 							timer = void 0
+							this.confirm = true
 						}, 3000)
-						this.confirm = true
 					})
 					.catch((err) => {
 						console.error(err)
