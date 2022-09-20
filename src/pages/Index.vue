@@ -209,6 +209,15 @@
 								<q-icon color="primary" name="check_circle" />
 							</q-item-section>
 						</q-item>
+						<q-item>
+							<q-item-section>Ram Memory Information</q-item-section>
+							<q-item-section avatar v-if="!result.rmFiles">
+								<q-spinner-rings color="red" />
+							</q-item-section>
+							<q-item-section avatar v-else>
+								<q-icon color="primary" name="check_circle" />
+							</q-item-section>
+						</q-item>
 					</q-list>
 				</q-card-section>
 			</q-card>
@@ -235,7 +244,6 @@
 	import { Loading, QSpinnerGears, QSpinnerHourglass } from 'quasar'
 	import axios from 'axios'
 	import JsBarcode from 'jsbarcode'
-	import { ref } from 'vue'
 
 	export default {
 		name: 'PageIndex',
@@ -254,6 +262,7 @@
 					infoCpu: false,
 					hdd: false,
 					act: false,
+					rmFiles: false,
 				},
 				window: false,
 				barcode: false,
@@ -285,7 +294,8 @@
 					this.save()
 				}
 			})
-			for (let x = 0; x < 10; x++) {
+			this.result.rmFiles = await this.rmFiles()
+			for (let x = 0; x < 3; x++) {
 				if (!this.result.compSys) this.result.compSys = await this.compSys()
 				if (!this.result.infoCpu) this.result.infoCpu = await this.infoCpu()
 				if (!this.result.hdd) this.result.hdd = await this.hdd()
@@ -304,10 +314,7 @@
 			}
 			let regex = /(\W|^)All-in-One|Desktop|Mini|Tower(\W|$)/gm
 			let regTouch = /(\W|^)x360(\W|$)/gm
-			if (regex.test(this.form.product)) {
-				console.log('regex: ', regex.test(this.form.product))
-				this.psu = false
-			}
+			this.psu = regex.test(this.form.product)
 			if (regTouch.test(this.form.product)) {
 				console.log('regex: ', regTouch.test(this.form.product))
 				this.touch = true
@@ -464,65 +471,96 @@
 			},
 			async hdd() {
 				return new Promise(async (resolve) => {
-					// Start the process
-					let ps = await new PowerShell(
-						`Get-CimInstance -ClassName MSFT_PhysicalDisk -Namespace root\\Microsoft\\Windows\\Storage | Select SerialNumber, MediaType | convertTo-Json;
+					try {
+						// Start the process
+						let ps = await new PowerShell(
+							`Get-CimInstance -ClassName MSFT_PhysicalDisk -Namespace root\\Microsoft\\Windows\\Storage | Select SerialNumber, MediaType | convertTo-Json;
 		           Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | Select Caption, Size, Model, serialNumber | convertTo-Json`
-					)
+						)
 
-					// Handle process errors (e.g. powershell not found)
+						// Handle process errors (e.g. powershell not found)
+						ps.on('error', (err) => {
+							console.error(err)
+							resolve(false)
+						})
+
+						// Stdout
+						ps.on('output', async (data) => {
+							//console.log(data)
+							let cadena = data
+							let expresion = /\[([^\]]+)]/gm
+							let info = await cadena.match(expresion)
+							let master = await JSON.parse(info[0])
+							let detall = info[1]
+							detall = await JSON.parse(detall)
+							console.log(typeof detall, detall)
+							//console.log(typeof master, master)
+							//console.log(typeof detall, detall)
+							let n = 1
+							let t = ''
+							master = await master.filter((v) => v.MediaType == 3 || v.MediaType == 4)
+							console.log('master: ', master.length)
+							for (let x = 0; x < master.length; x++) {
+								let s = master[x].SerialNumber
+								console.log(s, detall[1])
+								//detall = detall.find(async (v) => v.serialNumber == s)
+								for (let a = 0; a < detall.length; a++) {
+									if (s == detall[a].serialNumber) {
+										console.log(detall[a].serialNumber)
+										let type = detall[a].MediaType == 3 ? 'HDD' : 'SDD'
+										console.log('detall: ', a, typeof detall[a], detall[a])
+										this.form[`storage${n}`] = `${detall[a].Model} ${type} ${await this.rsConvert(
+											detall[a].Size
+										)}`
+										await console.log(`${detall[a].Model} ${type} ${await this.rsConvert(detall[a].Size)}`)
+										n++
+									}
+								}
+							}
+							resolve(true)
+						})
+
+						// Stderr
+						ps.on('error-output', (data) => {
+							console.error(data)
+							resolve(false)
+						})
+
+						// End
+						ps.on('end', (code) => {
+							// Do Something on end
+						})
+					} catch (e) {
+						await this.hdd()
+					}
+				})
+			},
+			async rmFiles() {
+				return new Promise(async (resolve) => {
+					let ps = new PowerShell([
+						`Remove-item 'C:\\Intel', 'C:\\PerfLogs', 'C:\\swsetup', 'C:\\SWSetup', 'C:\\System.sav', 'C:\\Windows.old', 'c:\\*.LOG'   –force -Recurse`,
+					])
 					ps.on('error', (err) => {
 						console.error(err)
 						resolve(false)
 					})
-
-					// Stdout
 					ps.on('output', async (data) => {
-						//console.log(data)
-						let cadena = data
-						let expresion = /\[([^\]]+)]/gm
-						let info = await cadena.match(expresion)
-						let master = await JSON.parse(info[0])
-						let detall = info[1]
-						detall = await JSON.parse(detall)
-						console.log(typeof detall, detall)
-						//console.log(typeof master, master)
-						//console.log(typeof detall, detall)
-						let n = 1
-						let t = ''
-						master = await master.filter((v) => v.MediaType == 3 || v.MediaType == 4)
-						console.log('master: ', master.length)
-						for (let x = 0; x < master.length; x++) {
-							let s = master[x].SerialNumber
-							console.log(s, detall[1])
-							//detall = detall.find(async (v) => v.serialNumber == s)
-							for (let a = 0; a < detall.length; a++) {
-								if (s == detall[a].serialNumber) {
-									console.log(detall[a].serialNumber)
-									let type = detall[a].MediaType == 3 ? 'HDD' : 'SDD'
-									console.log('detall: ', a, typeof detall[a], detall[a])
-									this.form[`storage${n}`] = `${detall[a].Model} ${type} ${await this.rsConvert(
-										detall[a].Size
-									)}`
-									await console.log(`${detall[a].Model} ${type} ${await this.rsConvert(detall[a].Size)}`)
-									n++
-								}
-							}
-						}
 						resolve(true)
 					})
-
-					// Stderr
 					ps.on('error-output', (data) => {
 						console.error(data)
 						resolve(false)
 					})
-
-					// End
 					ps.on('end', (code) => {
+						//console.log('finish')
 						// Do Something on end
 					})
 				})
+				/* await execSync(`cd c:/ && `, async (error, stdout, stderr) => {
+							console.log(error)
+							if (!error) {
+							} else reject(new Error(error))
+						}) */
 			},
 			async srSave() {
 				Loading.show({
