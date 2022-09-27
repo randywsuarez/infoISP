@@ -14,7 +14,7 @@
 				<q-toolbar-title> ISP Electronic </q-toolbar-title>
 
 				<div style="margin-right: 10px">Eng. Randy Suarez</div>
-				<!-- <q-btn round color="black" icon="close" @click="app.exit(0)" /> -->
+				<q-btn round color="black" icon="close" @click="closeApp" />
 			</q-toolbar>
 		</q-header>
 
@@ -101,6 +101,14 @@
 				leftDrawerOpen: false,
 				essentialLinks: linksData,
 			}
+		},
+		methods: {
+			closeApp() {
+				if (process.env.MODE === 'electron') {
+					console.log(window)
+					window.window.close()
+				}
+			},
 		},
 		mounted() {
 			//this.$q.fullscreen.toggle()

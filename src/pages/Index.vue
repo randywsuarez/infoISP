@@ -294,7 +294,7 @@
 					this.save()
 				}
 			})
-			this.result.rmFiles = await this.rmFiles()
+			//this.result.rmFiles = await this.rmFiles()
 			for (let x = 0; x < 3; x++) {
 				if (!this.result.compSys) this.result.compSys = await this.compSys()
 				if (!this.result.infoCpu) this.result.infoCpu = await this.infoCpu()

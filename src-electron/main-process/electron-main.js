@@ -26,6 +26,7 @@ function createWindow() {
 		nodeIntegrationInWorker: true,
 		useContentSize: true,
 		fullscreen: true,
+		frame: false,
 		webPreferences: {
 			// Change from /quasar.conf.js > electron > nodeIntegration;
 			// More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration
