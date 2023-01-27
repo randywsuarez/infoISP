@@ -1,8 +1,8 @@
 <template>
-	<q-page class="bg-grey-10">
+	<q-page class="">
 		<div class="row col">
 			<div class="col-9">
-				<q-card dark flat bordered style="width: 95%" class="bg-dark text-white inset-shadow q-ma-md">
+				<q-card dark bordered class="bg-grey-9">
 					<q-card-section>
 						<div class="text-h6">Description Commercial Laptop</div>
 					</q-card-section>
@@ -83,16 +83,23 @@
 						</div>
 						<q-btn
 							dark
+							label="test"
+							color="primary"
+							class="col col-12 self-end q-mt-md fixed-bottom rounded-borders q-pa-md q-ma-sm"
+							@click="rsPartSurfer"
+						/>
+						<!-- <q-btn
+							dark
 							label="Save"
 							color="primary"
 							class="col col-12 self-end q-mt-md fixed-bottom rounded-borders q-pa-md q-ma-sm"
 							@click="save"
-						/>
+						/> -->
 					</q-card-section>
 				</q-card>
 			</div>
 			<div class="col-3" style="padding: 0px 40px">
-				<q-card dark flat bordered style="width: 80%" class="bg-dark text-white inset-shadow q-ma-md">
+				<q-card dark bordered class="bg-grey-9">
 					<q-card-section class="row col q-pt-none justify-center" style="padding: 20px">
 						<q-btn
 							v-if="!barcode"
@@ -138,7 +145,7 @@
 				<q-card-actions align="right" class="bg-white text-teal"> </q-card-actions>
 			</q-card>
 		</q-dialog>
-		<q-dialog dark v-model="list">
+		<q-dialog dark persistent v-model="list">
 			<q-card>
 				<q-card-section class="row items-center q-pb-none">
 					<div class="text-h6">Loading Information</div>
@@ -222,6 +229,7 @@
 						</q-item>
 					</q-list>
 				</q-card-section>
+				<q-btn v-if="int" flat label="Try" color="Red" @click="rsFun()" />
 			</q-card>
 		</q-dialog>
 		<q-dialog dark v-model="confirm" persistent>
@@ -257,6 +265,7 @@
 				confirm: false,
 				psu: true,
 				touch: false,
+				int: false,
 				form: {},
 				result: {
 					compSys: false,
@@ -290,7 +299,8 @@
 			},
 		},
 		async created() {
-			Loading.show()
+			await this.rsFun()
+			/* Loading.show()
 			window.addEventListener('keypress', (event) => {
 				console.log('event: ', event)
 				if ((event.code === 'KeyS' && event.ctrlKey) || (event.code === 'Enter' && event.repeat)) {
@@ -315,7 +325,7 @@
 				)
 					break
 			}
-			let regex = /(\W|^)All-in-One|Desktop|Mini|Tower(\W|$)/gm
+			let regex = /(\W|^)Desktop|Mini|Tower(\W|$)/gm
 			let regTouch = /(\W|^)x360(\W|$)/gm
 			this.psu = regex.test(this.form.product)
 			if (regTouch.test(this.form.product)) {
@@ -325,9 +335,57 @@
 			await this.fnBarcode()
 			console.log('result: ', this.result)
 			this.list = false
-			Loading.hide()
+			Loading.hide() */
 		},
 		methods: {
+			async rsFun() {
+				Loading.show()
+				window.addEventListener('keypress', (event) => {
+					console.log('event: ', event)
+					if ((event.code === 'KeyS' && event.ctrlKey) || (event.code === 'Enter' && event.repeat)) {
+						this.save()
+					}
+				})
+				//this.result.rmFiles = await this.rmFiles()
+				for (let x = 0; x < 3; x++) {
+					if (!this.result.compSys) this.result.compSys = await this.compSys()
+					if (!this.result.infoCpu) this.result.infoCpu = await this.infoCpu()
+					if (!this.result.hdd)
+						await this.hdd()
+							.then((res) => {
+								this.result.hdd = res
+							})
+							.catch((err) => {
+								console.error('hdd: ', err)
+
+								this.int = true
+								Loading.hide()
+							})
+					if (!this.result.vdCtrl) this.result.vdCtrl = await this.vdCtrl()
+					if (!this.result.memRam) this.result.memRam = await this.memRam()
+					if (!this.result.license) this.result.license = await this.license()
+					if (
+						this.result.compSys &&
+						this.result.infoCpu &&
+						this.result.hdd &&
+						this.result.vdCtrl &&
+						this.result.memRam &&
+						this.result.license
+					)
+						break
+				}
+				let regex = /(\W|^)All-in-One|Desktop|Mini|Tower(\W|$)/gm
+				let regTouch = /(\W|^)x360(\W|$)/gm
+				this.psu = regex.test(this.form.product)
+				if (regTouch.test(this.form.product)) {
+					console.log('regex: ', regTouch.test(this.form.product))
+					this.touch = true
+				}
+				await this.fnBarcode()
+				console.log('result: ', this.result)
+				this.list = false
+				Loading.hide()
+			},
 			async rsValue(lines, property, separator, trimmed, lineMatch) {
 				separator = separator || ':'
 				property = property.toLowerCase()
@@ -536,7 +594,9 @@
 							// Do Something on end
 						})
 					} catch (e) {
-						await this.hdd()
+						console.log(e)
+						this.int = true
+						Loading.hide()
 					}
 				})
 			},
@@ -716,6 +776,8 @@
 					ps.on('error-output', (data) => {
 						console.error('error-output')
 						console.error(data)
+						this.int = true
+						Loading.hide()
 						reject(false)
 					})
 
@@ -776,6 +838,59 @@
 				})
 				this.barcode = true
 			},
+			async rsPartSurfer() {
+				let result = '',
+					fan = ''
+				let url =
+					'https://pro-psurf-app.glb.inc.hp.com/partsurferapi/SerialNumber/GetSerialNumber/5CC0010152/ProductNumber/2SS03AV/country/US/usertype/EXT'
+
+				let options = {
+					method: 'GET',
+					headers: {
+						Accept: 'application/json, text/plain, */*',
+						'Accept-Encoding': 'gzip, deflate, br',
+						'Accept-Language': 'en-US,en;q=0.9,es;q=0.8',
+						Authorization: 'Basic MjAyMzEzNy1wYXJ0c3VyZmVyOlBTVVJGQCNQUk9E',
+						Connection: 'keep-alive',
+						Host: 'pro-psurf-app.glb.inc.hp.com',
+						Origin: 'https://partsurfer.hp.com',
+						Referer: 'https://partsurfer.hp.com/',
+						'Sec-Fetch-Dest': 'empty',
+						'Sec-Fetch-Mode': 'cors',
+						'Sec-Fetch-Site': 'same-site',
+						'User-Agent':
+							'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
+						'sec-ch-ua': '"Chromium";v="106", "Google Chrome";v="106", "Not;A=Brand";v="99"',
+						'sec-ch-ua-mobile': '?0',
+						'sec-ch-ua-platform': '"Windows"',
+					},
+				}
+
+				fetch(url, options)
+					.then((res) => res.json())
+					.then((json) => {
+						console.log(json)
+						if (json.Status.Code == 'S-0001') {
+							result = json.Body.ProductBOM.find(
+								(v) => v.KeywordName == 'Power Supply' && v.LocalProductNumber == '2SS03AV'
+							)
+							if (!result)
+								result = json.Body.ProductBOM.find(
+									(v) => v.KeywordName == 'AC Adapter' && v.LocalProductNumber == '2SS03AV'
+								)
+							console.log(result.EnhancedDescription)
+							this.form.psu = result.EnhancedDescription
+
+							fan = json.Body.SerialNumberBOM.spare_part.find(
+								(v) => v.sp_keyword == 'Processor' && v.part_number == '2SS03AV'
+							)
+							console.log(fan.spare_enhance_desc)
+							//if (fan.spare_enhance_desc) this.form.cooler = fan.spare_enhance_desc
+						}
+					})
+					.catch((err) => console.error('error:' + err))
+			},
+			async rsGpu() {},
 		},
 		async mounted() {
 			let limit = new Date(2022, 12, 31)

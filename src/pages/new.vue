@@ -38,16 +38,16 @@
 						classes: 'bg-grey-2 ellipsis',
 						headerClasses: 'bg-primary text-white',
 					},
-	         {
-	           name: '',
+					{
+						name: 1021,
 						required: true,
 						label: 'Prod Num (Units)',
 						align: 'left',
-	         }
+					},
 				],
 
 				data: [
-					{name
+					{
 						prod_num: '10M54UA#ABL',
 						units: 1,
 					},

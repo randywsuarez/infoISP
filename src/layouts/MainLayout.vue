@@ -12,8 +12,14 @@
 				/> -->
 
 				<q-toolbar-title> ISP Electronic </q-toolbar-title>
-
-				<div style="margin-right: 10px">Eng. Randy Suarez</div>
+				<q-tabs shrink stretch>
+					<q-route-tab to="/system-information" label="System Information" icon="info" />
+					<q-route-tab to="/parts" label="Add Parts" icon="developer_board" />
+					<q-route-tab to="/new" label="Add New Computer" icon="computer" />
+					<q-route-tab to="/Testing-return" label="Check Returns" icon="devices" />
+					<q-route-tab to="/label" label="Labels" icon="description" />
+					<q-route-tab to="/PalletReport" label="Pallet Report" icon="list" />
+				</q-tabs>
 				<q-btn round color="black" icon="close" @click="closeApp" />
 			</q-toolbar>
 		</q-header>
@@ -26,7 +32,7 @@
 		</q-drawer> -->
 
 		<q-page-container>
-			<router-view />
+			<router-view class="q-pa-md" />
 		</q-page-container>
 	</q-layout>
 </template>

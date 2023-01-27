@@ -11,8 +11,10 @@
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "axios": "^0.27.2",
+    "canvas": "^2.10.2",
     "core-js": "^3.6.5",
     "jsbarcode": "^3.11.5",
+    "pdfmake": "^0.2.6",
     "powershell": "^2.3.2",
     "quasar": "^1.0.0",
     "rimraf": "^3.0.2",

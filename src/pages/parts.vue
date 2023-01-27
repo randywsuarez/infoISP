@@ -1,73 +1,66 @@
 <template>
-	<page>
-		<div slot="principal">
-			<q-card flat bordered style="max-height: 80vh" class="shadow-2">
-				<q-card-section>
-					<div class="text-h6">Scan ready to ship laptop (Printer A)</div>
-				</q-card-section>
+	<q-page class="bg-grey-10">
+		<div class="row col">
+			<div class="col-9">
+				<q-card dark bordered class="bg-grey-9" style="width: 95vw">
+					<q-card-section>
+						<div class="text-h6">Add Parts</div>
+					</q-card-section>
 
-				<q-card-section class="row col q-pt-none">
-					<div class="col-md-6 col-xs-12">
-						<q-select
-							outlined
-							v-model="form.type"
-							:options="type"
-							map-options
-							emit-value
-							label="Select Grade"
-						/>
-					</div>
-					<div class="col-md-6 col-xs-12">
-						<q-select
-							outlined
-							v-model="form.pallet"
-							:options="pallet"
-							map-options
-							emit-value
-							label="Select Pallet"
-						/>
-					</div>
-					<div class="col-12">
-						<q-input outlined v-model="form.serial" label="Serial Number" />
-					</div>
-					<div class="col-md-6 col-xs-12">
-						<q-checkbox
-							left-label
-							v-model="form.duplicate"
-							label="Duplicate Label"
-							checked-icon="task_alt"
-							unchecked-icon="highlight_off"
-						/>
-					</div>
-					<q-btn
-						outline
-						label="Save"
-						color="primary"
-						class="col col-12 self-end"
-						@click="srSave"
-						:disable="$v.form.$invalid"
-					/>
-				</q-card-section>
+					<q-card-section class="row col q-pt-none">
+						<div class="col-md-6 col-xs-12">
+							<q-select
+								dark
+								outlined
+								v-model="form.type"
+								:options="type"
+								map-options
+								emit-value
+								label="Select Grade"
+							/>
+						</div>
+						<div class="col-md-6 col-xs-12">
+							<q-select
+								dark
+								outlined
+								v-model="form.pallet"
+								:options="pallet"
+								map-options
+								emit-value
+								label="Select Pallet"
+							/>
+						</div>
+						<div class="col-12">
+							<q-input dark outlined v-model="form.serial" label="Serial Number" />
+						</div>
+						<div class="col-md-6 col-xs-12">
+							<q-checkbox
+								dark
+								left-label
+								v-model="form.duplicate"
+								label="Duplicate Label"
+								checked-icon="task_alt"
+								unchecked-icon="highlight_off"
+							/>
+						</div>
 
-				<!-- <q-separator inset />
-
-				<q-card-section>
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-					labore et dolore magna aliqua.
-				</q-card-section> -->
-			</q-card>
-			<div>></div>
+						<q-btn
+							dark
+							label="Save"
+							color="primary"
+							class="col col-12 self-end q-mt-md fixed-bottom rounded-borders q-pa-md q-ma-sm"
+							@click="save"
+						/>
+					</q-card-section>
+				</q-card>
+			</div>
 		</div>
-	</page>
+	</q-page>
 </template>
 <script>
-	import Page from 'components/templateOne'
-	import { required, email } from 'vuelidate/lib/validators'
-	import { Loading, QSpinnerGears } from 'quasar'
+	import { required } from 'vuelidate/lib/validators'
+	import { Loading } from 'quasar'
 	export default {
-		components: {
-			Page,
-		},
 		data() {
 			return {
 				data: [],
@@ -103,10 +96,10 @@
 		},
 		methods: {
 			async srSave() {
-				this.$v.form.$touch()
+				/* this.$v.form.$touch()
 				if (this.$v.form.$error) {
 					return
-				}
+				} */
 				Loading.show()
 				if (!this.form._id)
 					await this.$db
