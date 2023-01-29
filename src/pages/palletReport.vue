@@ -38,7 +38,7 @@
 			<q-separator dark inset />
 			<q-card-section>
 				<div class="col row">
-					<pre class="col-md-6">{{ pallets.f }}</pre>
+					<pre class="col-md-6">{{ pallets }}</pre>
 					<pre class="col-md-6">{{ totalPalletes }}</pre>
 				</div>
 			</q-card-section>
@@ -61,9 +61,7 @@
 					d: [],
 					e: [],
 					f: [],
-					g: [],
 					h: [],
-					i: [],
 				},
 				totalPalletes: {
 					a: [],
@@ -72,9 +70,7 @@
 					d: [],
 					e: [],
 					f: [],
-					g: [],
 					h: [],
-					i: [],
 				},
 				result: '',
 				top: 140,
@@ -427,15 +423,33 @@
 				await this.asignPallet(total, 'b')
 			},
 			async c() {
-				let total = 0
+				let block = 'c'
 				for (let x in this.result) {
 					let model = this.result[x]
 					if (model.units >= 11 && model.units <= 20) {
-						this.pallets.c.push(model)
-						total += model.units
+						this.pallets[block].push(model)
 					}
 				}
-				await this.asignPallet(total, 'c')
+				this.pallets[block].sort((a, b) => b.units - a.units)
+				let pal = this.lastPallete + 1
+				for (let x = 1; x <= this.pallets[block].length; x++) {
+					let total = 0
+					for (let f in this.pallets[block]) {
+						//if (!this.pallets[block][f].status) console.log(this.pallets[block][f].units + total)
+						if (!this.pallets[block][f].status && this.pallets[block][f].units + total <= this.top) {
+							this.pallets[block][f].pallete = pal
+							this.pallets[block][f].status = true
+							total += this.pallets[block][f].units
+						}
+					}
+					if (!total == 0) {
+						this.totalPalletes[block].push({ pallete: pal, units: total })
+						pal++
+					} else {
+						continue
+					}
+				}
+				this.lastPallete = pal
 			},
 			async d() {
 				let total = 0
@@ -464,19 +478,19 @@
 				for (let x in this.result) {
 					let model = this.result[x]
 					if (model.units >= 46 && model.units <= 99) {
-						this.pallets.f.push(model)
+						this.pallets[block].push(model)
 					}
 				}
-				this.pallets.f.sort((a, b) => b.units - a.units)
+				this.pallets[block].sort((a, b) => b.units - a.units)
 				let pal = this.lastPallete + 1
-				for (let x = 1; x <= this.pallets.f.length; x++) {
+				for (let x = 1; x <= this.pallets[block].length; x++) {
 					let total = 0
-					for (let f in this.pallets.f) {
-						//if (!this.pallets.f[f].status) console.log(this.pallets.f[f].units + total)
-						if (!this.pallets.f[f].status && this.pallets.f[f].units + total <= this.top) {
-							this.pallets.f[f].pallete = pal
-							this.pallets.f[f].status = true
-							total += this.pallets.f[f].units
+					for (let f in this.pallets[block]) {
+						//if (!this.pallets[block][f].status) console.log(this.pallets[block][f].units + total)
+						if (!this.pallets[block][f].status && this.pallets[block][f].units + total <= this.top) {
+							this.pallets[block][f].pallete = pal
+							this.pallets[block][f].status = true
+							total += this.pallets[block][f].units
 						}
 					}
 					if (!total == 0) {
