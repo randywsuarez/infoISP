@@ -360,18 +360,18 @@
 					let model3 = JSON.parse(JSON.stringify(this.result[x]))
 					let model4 = JSON.parse(JSON.stringify(this.result[x]))
 					let model5 = JSON.parse(JSON.stringify(this.result[x]))
-					if (model.units >= 100 && model.units <= 140) {
+					if (model.units >= 100 && model.units <= this.top) {
 						this.pallets.h.push(model)
 						this.result[x].status = true
 					}
-					if (model.units > 140 && model.units <= 280) {
+					if (model.units > this.top && model.units <= this.top * 2) {
 						model.units = Math.floor(model.units / 2)
 						this.pallets.h.push(model)
 						model2.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
 						this.pallets.h.push(model2)
 						this.result[x].status = true
 					}
-					if (model.units > 280 && model.units <= 420) {
+					if (model.units > this.top * 2 && model.units <= this.top * 3) {
 						model.units = Math.floor(model.units / 3)
 						this.pallets.h.push(model)
 						model2.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
@@ -380,7 +380,7 @@
 						this.pallets.h.push(model3)
 						this.result[x].status = true
 					}
-					if (model.units > 420 && model.units <= 560) {
+					if (model.units > this.top * 3 && model.units <= this.top * 4) {
 						model.units = Math.floor(model.units / 4)
 						this.pallets.h.push(model)
 						model2.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
@@ -391,7 +391,7 @@
 						this.pallets.h.push(model4)
 						this.result[x].status = true
 					}
-					if (model.units > 560 && this.data[x].units <= 700) {
+					if (model.units > this.top * 4 && this.data[x].units <= ths.top * 5) {
 						model.units = Math.floor(this.data[x].units / 5)
 						this.pallets.h.push(model)
 						model2.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
