@@ -47,12 +47,21 @@
 	export default {
 		data() {
 			return {
-				lorem:
-					'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
 				files: null,
 				data: '',
 				form: [],
-				pallets: [],
+				lastPallete: '',
+				pallets: {
+					a: [],
+					b: [],
+					c: [],
+					d: [],
+					e: [],
+					f: [],
+					g: [],
+					h: [],
+					i: [],
+				},
 				result: '',
 				top: 140,
 				generate: false,
@@ -61,6 +70,7 @@
 		},
 		methods: {
 			async getInfo() {
+				this.lastPallete = this.form.pallet - 1
 				const fs = require('fs')
 				fs.readFile(this.files.path, 'utf8', (err, jsonString) => {
 					if (err) {
@@ -96,11 +106,15 @@
 								arr.push({
 									prod_num: d,
 									units: this.top,
+									status: false,
+									pallete: '',
 								})
 							} else {
 								arr.push({
 									prod_num: d,
 									units: uni - this.top,
+									status: false,
+									pallete: '',
 								})
 							}
 						}
@@ -108,6 +122,8 @@
 						arr.push({
 							prod_num: d,
 							units: uni,
+							status: false,
+							pallete: '',
 						})
 					total += uni
 				}
@@ -141,6 +157,66 @@
 					}
 				}
 				console.log(this.asignacion)
+			},
+			async h() {
+				for (let x in this.data) {
+					if (this.data[x].units >= 100 && this.data[x].units <= 140) {
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+					}
+	         if()
+					if (this.data[x].units > 140 && this.data[x].units <= 280) {
+						this.data[x].units = Math.ceil(this.data[x].units / 2)
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+					}
+					if (this.data[x].units > 280 && this.data[x].units <= 420) {
+						this.data[x].units = Math.ceil(this.data[x].units / 3)
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+					}
+					if (this.data[x].units > 420 && this.data[x].units <= 560) {
+						this.data[x].units = Math.ceil(this.data[x].units / 4)
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+					}
+					if (this.data[x].units > 560 && this.data[x].units <= 700) {
+						this.data[x].units = Math.ceil(this.data[x].units / 5)
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+						this.data[x].units = this.data[x].units + 1
+						this.data[x].pallete = this.lastPallete++
+						this.pallets.h.push(this.data[x])
+					}
+						this.data[x].status = true
+				}
 			},
 		},
 	}

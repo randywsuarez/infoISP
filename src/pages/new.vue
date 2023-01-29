@@ -9,10 +9,11 @@
 		>
 			<template v-slot:body="props">
 				<q-tr :props="props">
+					<q-td key="name" :props="props">{{ props.row.prod_num }} ({{ props.row.units }})</q-td>
 					<q-td :props="props" v-for="(e, k) in ej" :key="e">
 						{{ e }}
-						<q-popup-edit v-model="props.row.name" v-slot="scope">
-							<q-input v-model="scope.value" dense autofocus counter />
+						<q-popup-edit v-model="props.row.calories" title="Update calories" buttons v-slot="scope">
+							<q-input type="number" v-model="scope.value" dense autofocus />
 						</q-popup-edit>
 					</q-td>
 				</q-tr>
@@ -25,7 +26,7 @@
 	export default {
 		data() {
 			return {
-				ej: ['name', 'calories', 'protein', 'sodium'],
+				ej: [1023, 1024],
 				columns: [
 					{
 						name: 'name',
@@ -41,7 +42,25 @@
 					{
 						name: 1021,
 						required: true,
-						label: 'Prod Num (Units)',
+						label: '1021',
+						align: 'left',
+					},
+					{
+						name: 1022,
+						required: true,
+						label: '1021',
+						align: 'left',
+					},
+					{
+						name: 1023,
+						required: true,
+						label: '1021',
+						align: 'left',
+					},
+					{
+						name: 1024,
+						required: true,
+						label: '1021',
 						align: 'left',
 					},
 				],
