@@ -37,7 +37,10 @@
 
 			<q-separator dark inset />
 			<q-card-section>
-				<pre>{{ pallets }}</pre>
+				<div class="col row">
+					<pre class="col-md-6">{{ pallets }}</pre>
+					<pre class="col-md-6">{{ result }}</pre>
+				</div>
 			</q-card-section>
 		</q-card>
 	</div>
@@ -70,7 +73,7 @@
 		},
 		methods: {
 			async getInfo() {
-				this.lastPallete = this.form.pallet - 1
+				this.lastPallete = this.form.pallet
 				const fs = require('fs')
 				fs.readFile(this.files.path, 'utf8', (err, jsonString) => {
 					if (err) {
@@ -134,7 +137,14 @@
 				}
 				console.log(total, Math.ceil(total / this.top), this.pallets)
 				//await this.asignPallet(arr, Math.ceil(total / this.top)) */
+				await this.a()
+				await this.b()
+				await this.c()
+				await this.d()
+				await this.e()
+				await this.g()
 				await this.h()
+				console.log(this.pallets.h)
 			},
 			async asignPallet(arr, ptotal) {
 				let pal = this.form.pallet
@@ -159,51 +169,120 @@
 				}
 				console.log(this.asignacion)
 			},
+			async a() {
+				for (let x in this.result) {
+					let model = this.result[x]
+					if (model.units >= 1 && model.units <= 5) {
+						this.pallets.a.push(model)
+					}
+				}
+			},
+			async b() {
+				for (let x in this.result) {
+					let model = this.result[x]
+					if (model.units >= 6 && model.units <= 10) {
+						this.pallets.b.push(model)
+					}
+				}
+			},
+			async c() {
+				for (let x in this.result) {
+					let model = this.result[x]
+					if (model.units >= 11 && model.units <= 20) {
+						this.pallets.c.push(model)
+					}
+				}
+			},
+			async d() {
+				for (let x in this.result) {
+					let model = this.result[x]
+					if (model.units >= 21 && model.units <= 35) {
+						this.pallets.d.push(model)
+					}
+				}
+			},
+			async e() {
+				for (let x in this.result) {
+					let model = this.result[x]
+					if (model.units >= 36 && model.units <= 45) {
+						this.pallets.e.push(model)
+					}
+				}
+			},
+			async f() {
+				for (let x in this.result) {
+					let model = this.result[x]
+					if (model.units >= 46 && model.units <= 70) {
+						this.pallets.f.push(model)
+					}
+				}
+			},
+			async g() {
+				for (let x in this.result) {
+					let model = this.result[x]
+					if (model.units >= 71 && model.units <= 99) {
+						this.pallets.g.push(model)
+					}
+				}
+			},
 			async h() {
 				for (let x in this.result) {
-					console.log(this.result[x])
-					if (this.result[x].units >= 100 && this.result[x].units <= 140) {
-						this.pallets.h.push(this.result[x])
+					let model = JSON.parse(JSON.stringify(this.result[x]))
+					let model2 = JSON.parse(JSON.stringify(this.result[x]))
+					let model3 = JSON.parse(JSON.stringify(this.result[x]))
+					let model4 = JSON.parse(JSON.stringify(this.result[x]))
+					let model5 = JSON.parse(JSON.stringify(this.result[x]))
+					if (model.units >= 100 && model.units <= 140) {
+						this.pallets.h.push(model)
+						this.result[x].status = true
 					}
-					if (this.result[x].units > 140 && this.result[x].units <= 280) {
-						this.result[x].units = Math.ceil(this.result[x].units / 2)
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
+					if (model.units > 140 && model.units <= 280) {
+						model.units = Math.floor(model.units / 2)
+						this.pallets.h.push(model)
+						model2.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model2)
+						this.result[x].status = true
 					}
-					if (this.result[x].units > 280 && this.result[x].units <= 420) {
-						this.result[x].units = Math.ceil(this.result[x].units / 3)
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
+					if (model.units > 280 && model.units <= 420) {
+						model.units = Math.floor(model.units / 3)
+						this.pallets.h.push(model)
+						model2.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model2)
+						model1.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model3)
+						this.result[x].status = true
 					}
-					if (this.result[x].units > 420 && this.result[x].units <= 560) {
-						this.result[x].units = Math.ceil(this.result[x].units / 4)
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
+					if (model.units > 420 && model.units <= 560) {
+						model.units = Math.floor(model.units / 4)
+						this.pallets.h.push(model)
+						model2.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model2)
+						model3.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model3)
+						model4.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model4)
+						this.result[x].status = true
 					}
-					if (this.result[x].units > 560 && this.data[x].units <= 700) {
-						this.result[x].units = Math.ceil(this.data[x].units / 5)
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
-						this.result[x].units = this.result[x].units + 1
-						this.pallets.h.push(this.result[x])
+					if (model.units > 560 && this.data[x].units <= 700) {
+						model.units = Math.floor(this.data[x].units / 5)
+						this.pallets.h.push(model)
+						model2.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model2)
+						model3.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model3)
+						model4.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model4)
+						model5.units = this.result[x].units % 2 == 0 ? model.units : model.units + 1
+						this.pallets.h.push(model5)
+						this.result[x].status = true
 					}
-					this.result[x].status = true
 				}
-				console.log(this.pallets.h)
+				for (let x = 0; x < this.pallets.h.length; x++) {
+					this.pallets.h[x].pallete = this.lastPallete + x
+					this.pallets.h[x].status = true
+				}
+				this.lastPallete = this.lastPallete + this.pallets.h.length
+				console.log(this.lastPallete)
 			},
 		},
 	}
