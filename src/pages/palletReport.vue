@@ -68,7 +68,7 @@
 				result: '',
 				top: 140,
 				generate: false,
-				asignacion: [],
+				totalPalletes: [],
 			}
 		},
 		methods: {
@@ -170,12 +170,140 @@
 				console.log(this.asignacion)
 			},
 			async a() {
+				let total = 0
 				for (let x in this.result) {
 					let model = this.result[x]
 					if (model.units >= 1 && model.units <= 5) {
 						this.pallets.a.push(model)
+						total += model.units
 					}
 				}
+				console.log('a: ', total)
+				if (total < this.top) {
+					for (let x = 0; x < this.pallets.a.length; x++) {
+						this.pallets.a[x].pallete = this.lastPallete
+						this.pallets.a[x].status = true
+						this.totalPalletes.push({ pallete: np1, units: tpallet1 })
+					}
+				}
+
+				let tpallet1 = 0
+				let tpallet2 = 0
+				let tpallet3 = 0
+				let tpallet4 = 0
+				let tpallet5 = 0
+				let np1 = this.lastPallete
+				let np2 = this.lastPallete + 1
+				let np3 = this.lastPallete + 2
+				let np4 = this.lastPallete + 3
+				let np5 = this.lastPallete + 4
+
+				if (total > this.top && total <= this.top * 2) {
+					for (let x = 0; x < this.pallets.a.length; x++) {
+						if (tpallet1 + this.pallets.a[x].units <= Math.floor(total / 2)) {
+							this.pallets.a[x].pallete = np1
+							this.pallets.a[x].status = true
+							tpallet1 += this.pallets.a[x].units
+						} else {
+							this.pallets.a[x].pallete = np2
+							this.pallets.a[x].status = true
+							tpallet2 += this.pallets.a[x].units
+						}
+					}
+					this.lastPallete += 2
+					this.totalPalletes.push({ pallete: np1, units: tpallet1 }, { pallete: np2, units: tpallet2 })
+				}
+				if (total > this.top * 2 && total <= this.top * 3) {
+					for (let x = 0; x < this.pallets.a.length; x++) {
+						if (tpallet1 + this.pallets.a[x].units <= Math.floor(total / 2)) {
+							this.pallets.a[x].pallete = np1
+							this.pallets.a[x].status = true
+							tpallet1 += this.pallets.a[x].units
+						}
+						if (tpallet2 + this.pallets.a[x].units <= Math.floor(total / 3)) {
+							this.pallets.a[x].pallete = np2
+							this.pallets.a[x].status = true
+							tpallet2 += this.pallets.a[x].units
+						} else {
+							this.pallets.a[x].pallete = np3
+							this.pallets.a[x].status = true
+							tpallet3 += this.pallets.a[x].units
+						}
+					}
+					this.lastPallete += 3
+					this.totalPalletes.push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 }
+					)
+				}
+				if (total > this.top * 3 && total <= this.top * 4) {
+					for (let x = 0; x < this.pallets.a.length; x++) {
+						if (tpallet1 + this.pallets.a[x].units <= Math.floor(total / 4)) {
+							this.pallets.a[x].pallete = np1
+							this.pallets.a[x].status = true
+							tpallet1 += this.pallets.a[x].units
+						}
+						if (tpallet2 + this.pallets.a[x].units <= Math.floor(total / 4)) {
+							this.pallets.a[x].pallete = np2
+							this.pallets.a[x].status = true
+							tpallet2 += this.pallets.a[x].units
+						}
+						if (tpallet3 + this.pallets.a[x].units <= Math.floor(total / 4)) {
+							this.pallets.a[x].pallete = np3
+							this.pallets.a[x].status = true
+							tpallet3 += this.pallets.a[x].units
+						} else {
+							this.pallets.a[x].pallete = np4
+							this.pallets.a[x].status = true
+							tpallet4 += this.pallets.a[x].units
+						}
+					}
+					this.lastPallete += 4
+					this.totalPalletes.push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 },
+						{ pallete: np4, units: tpallet4 }
+					)
+				}
+				if (total > this.top * 4 && total <= this.top * 5) {
+					for (let x = 0; x < this.pallets.a.length; x++) {
+						if (tpallet1 + this.pallets.a[x].units <= Math.floor(total / 5)) {
+							this.pallets.a[x].pallete = np1
+							this.pallets.a[x].status = true
+							tpallet1 += this.pallets.a[x].units
+						}
+						if (tpallet2 + this.pallets.a[x].units <= Math.floor(total / 5)) {
+							this.pallets.a[x].pallete = np2
+							this.pallets.a[x].status = true
+							tpallet2 += this.pallets.a[x].units
+						}
+						if (tpallet3 + this.pallets.a[x].units <= Math.floor(total / 5)) {
+							this.pallets.a[x].pallete = np3
+							this.pallets.a[x].status = true
+							tpallet3 += this.pallets.a[x].units
+						}
+						if (tpallet4 + this.pallets.a[x].units <= Math.floor(total / 5)) {
+							this.pallets.a[x].pallete = np4
+							this.pallets.a[x].status = true
+							tpallet4 += this.pallets.a[x].units
+						} else {
+							this.pallets.a[x].pallete = np5
+							this.pallets.a[x].status = true
+							tpallet5 += this.pallets.a[x].units
+						}
+					}
+					this.lastPallete += 5
+					this.totalPalletes.push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 },
+						{ pallete: np4, units: tpallet4 },
+						{ pallete: np5, units: tpallet5 }
+					)
+				}
+				console.log(this.totalPalletes)
 			},
 			async b() {
 				for (let x in this.result) {
