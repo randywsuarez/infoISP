@@ -39,7 +39,7 @@
 			<q-card-section>
 				<div class="col row">
 					<pre class="col-md-6">{{ pallets }}</pre>
-					<pre class="col-md-6">{{ result }}</pre>
+					<pre class="col-md-6">{{ totalPalletes }}</pre>
 				</div>
 			</q-card-section>
 		</q-card>
@@ -65,10 +65,20 @@
 					h: [],
 					i: [],
 				},
+				totalPalletes: {
+					a: [],
+					b: [],
+					c: [],
+					d: [],
+					e: [],
+					f: [],
+					g: [],
+					h: [],
+					i: [],
+				},
 				result: '',
 				top: 140,
 				generate: false,
-				totalPalletes: [],
 			}
 		},
 		methods: {
@@ -103,7 +113,6 @@
 				for (let d of pn) {
 					let uni = this.data.filter((v) => v.prod_num == d).length
 					if (this.generate && uni > this.top) {
-						console.log(d, uni, Math.ceil(uni / this.top))
 						for (let x = 1; x <= Math.ceil(uni / this.top); x++) {
 							if (x < Math.ceil(uni / this.top)) {
 								arr.push({
@@ -131,12 +140,6 @@
 					total += uni
 				}
 				this.result = arr
-				//Generacion de paletas
-				/* for (let x = 0; x < Math.ceil(total / this.top); x++) {
-					this.pallets.push(this.form.pallet + x)
-				}
-				console.log(total, Math.ceil(total / this.top), this.pallets)
-				//await this.asignPallet(arr, Math.ceil(total / this.top)) */
 				await this.a()
 				await this.b()
 				await this.c()
@@ -144,30 +147,135 @@
 				await this.e()
 				await this.g()
 				await this.h()
-				console.log(this.pallets.h)
+				console.log(this.totalPalletes)
 			},
-			async asignPallet(arr, ptotal) {
-				let pal = this.form.pallet
-				let asig = {}
-				let cant = 0
-				for (let x = 0; x < arr.length; x++) {
-					if (arr[x].units <= 10) {
-						let pack = []
-						if (cant <= this.top) {
-							pack.push(arr[x])
-							asig[pal] = []
-							this.asignacion.push()
-						} else {
-							pack = []
-							this.asignacion.push({
-								Pallete: pal + 1,
-								units: cant + arr[x].units,
-							})
-							pack.push(arr[x])
-						}
+			async asignPallet(total, block) {
+				if (total < this.top) {
+					for (let x = 0; x < this.pallets[block].length; x++) {
+						this.pallets[block][x].pallete = this.lastPallete
+						this.pallets[block][x].status = true
+						this.totalPalletes[block].push({ pallete: np1, units: tpallet1 })
 					}
 				}
-				console.log(this.asignacion)
+				let tpallet1 = 0
+				let tpallet2 = 0
+				let tpallet3 = 0
+				let tpallet4 = 0
+				let tpallet5 = 0
+				let np1 = this.lastPallete + 1
+				let np2 = this.lastPallete + 2
+				let np3 = this.lastPallete + 3
+				let np4 = this.lastPallete + 4
+				let np5 = this.lastPallete + 5
+
+				if (total > this.top && total <= this.top * 2) {
+					for (let x = 0; x < this.pallets[block].length; x++) {
+						if (tpallet1 + this.pallets[block][x].units <= Math.floor(total / 2)) {
+							this.pallets[block][x].pallete = np1
+							this.pallets[block][x].status = true
+							tpallet1 += this.pallets[block][x].units
+						} else {
+							this.pallets[block][x].pallete = np2
+							this.pallets[block][x].status = true
+							tpallet2 += this.pallets[block][x].units
+						}
+					}
+					this.lastPallete += 2
+					this.totalPalletes[block].push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 }
+					)
+				}
+				if (total > this.top * 2 && total <= this.top * 3) {
+					for (let x = 0; x < this.pallets[block].length; x++) {
+						if (tpallet1 + this.pallets[block][x].units <= Math.floor(total / 2)) {
+							this.pallets[block][x].pallete = np1
+							this.pallets[block][x].status = true
+							tpallet1 += this.pallets[block][x].units
+						}
+						if (tpallet2 + this.pallets[block][x].units <= Math.floor(total / 3)) {
+							this.pallets[block][x].pallete = np2
+							this.pallets[block][x].status = true
+							tpallet2 += this.pallets[block][x].units
+						} else {
+							this.pallets[block][x].pallete = np3
+							this.pallets[block][x].status = true
+							tpallet3 += this.pallets[block][x].units
+						}
+					}
+					this.lastPallete += 3
+					this.totalPalletes[block].push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 }
+					)
+				}
+				if (total > this.top * 3 && total <= this.top * 4) {
+					for (let x = 0; x < this.pallets[block].length; x++) {
+						if (tpallet1 + this.pallets[block][x].units <= Math.floor(total / 4)) {
+							this.pallets[block][x].pallete = np1
+							this.pallets[block][x].status = true
+							tpallet1 += this.pallets[block][x].units
+						}
+						if (tpallet2 + this.pallets[block][x].units <= Math.floor(total / 4)) {
+							this.pallets[block][x].pallete = np2
+							this.pallets[block][x].status = true
+							tpallet2 += this.pallets[block][x].units
+						}
+						if (tpallet3 + this.pallets[block][x].units <= Math.floor(total / 4)) {
+							this.pallets[block][x].pallete = np3
+							this.pallets[block][x].status = true
+							tpallet3 += this.pallets[block][x].units
+						} else {
+							this.pallets[block][x].pallete = np4
+							this.pallets[block][x].status = true
+							tpallet4 += this.pallets[block][x].units
+						}
+					}
+					this.lastPallete += 4
+					this.totalPalletes[block].push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 },
+						{ pallete: np4, units: tpallet4 }
+					)
+				}
+				if (total > this.top * 4 && total <= this.top * 5) {
+					for (let x = 0; x < this.pallets[block].length; x++) {
+						if (tpallet1 + this.pallets[block][x].units <= Math.floor(total / 5)) {
+							this.pallets[block][x].pallete = np1
+							this.pallets[block][x].status = true
+							tpallet1 += this.pallets[block][x].units
+						}
+						if (tpallet2 + this.pallets[block][x].units <= Math.floor(total / 5)) {
+							this.pallets[block][x].pallete = np2
+							this.pallets[block][x].status = true
+							tpallet2 += this.pallets[block][x].units
+						}
+						if (tpallet3 + this.pallets[block][x].units <= Math.floor(total / 5)) {
+							this.pallets[block][x].pallete = np3
+							this.pallets[block][x].status = true
+							tpallet3 += this.pallets[block][x].units
+						}
+						if (tpallet4 + this.pallets[block][x].units <= Math.floor(total / 5)) {
+							this.pallets[block][x].pallete = np4
+							this.pallets[block][x].status = true
+							tpallet4 += this.pallets[block][x].units
+						} else {
+							this.pallets[block][x].pallete = np5
+							this.pallets[block][x].status = true
+							tpallet5 += this.pallets[block][x].units
+						}
+					}
+					this.lastPallete += 5
+					this.totalPalletes[block].push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 },
+						{ pallete: np4, units: tpallet4 },
+						{ pallete: np5, units: tpallet5 }
+					)
+				}
 			},
 			async a() {
 				let total = 0
@@ -178,12 +286,11 @@
 						total += model.units
 					}
 				}
-				console.log('a: ', total)
 				if (total < this.top) {
 					for (let x = 0; x < this.pallets.a.length; x++) {
 						this.pallets.a[x].pallete = this.lastPallete
 						this.pallets.a[x].status = true
-						this.totalPalletes.push({ pallete: np1, units: tpallet1 })
+						this.totalPalletes['a'].push({ pallete: np1, units: tpallet1 })
 					}
 				}
 
@@ -211,7 +318,10 @@
 						}
 					}
 					this.lastPallete += 2
-					this.totalPalletes.push({ pallete: np1, units: tpallet1 }, { pallete: np2, units: tpallet2 })
+					this.totalPalletes['a'].push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 }
+					)
 				}
 				if (total > this.top * 2 && total <= this.top * 3) {
 					for (let x = 0; x < this.pallets.a.length; x++) {
@@ -231,7 +341,7 @@
 						}
 					}
 					this.lastPallete += 3
-					this.totalPalletes.push(
+					this.totalPalletes['a'].push(
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 },
 						{ pallete: np3, units: tpallet3 }
@@ -260,7 +370,7 @@
 						}
 					}
 					this.lastPallete += 4
-					this.totalPalletes.push(
+					this.totalPalletes['a'].push(
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 },
 						{ pallete: np3, units: tpallet3 },
@@ -295,7 +405,7 @@
 						}
 					}
 					this.lastPallete += 5
-					this.totalPalletes.push(
+					this.totalPalletes['a'].push(
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 },
 						{ pallete: np3, units: tpallet3 },
@@ -303,55 +413,73 @@
 						{ pallete: np5, units: tpallet5 }
 					)
 				}
-				console.log(this.totalPalletes)
 			},
 			async b() {
+				let total = 0
 				for (let x in this.result) {
 					let model = this.result[x]
 					if (model.units >= 6 && model.units <= 10) {
 						this.pallets.b.push(model)
+						total += model.units
 					}
 				}
+				await this.asignPallet(total, 'b')
 			},
 			async c() {
+				let total = 0
 				for (let x in this.result) {
 					let model = this.result[x]
 					if (model.units >= 11 && model.units <= 20) {
 						this.pallets.c.push(model)
+						total += model.units
 					}
 				}
+				await this.asignPallet(total, 'c')
 			},
 			async d() {
+				let total = 0
 				for (let x in this.result) {
 					let model = this.result[x]
 					if (model.units >= 21 && model.units <= 35) {
 						this.pallets.d.push(model)
+						total += model.units
 					}
 				}
+				await this.asignPallet(total, 'd')
 			},
 			async e() {
+				let total = 0
 				for (let x in this.result) {
 					let model = this.result[x]
 					if (model.units >= 36 && model.units <= 45) {
 						this.pallets.e.push(model)
+						total += model.units
 					}
 				}
+				await this.asignPallet(total, 'e')
 			},
 			async f() {
+				let total = 0
 				for (let x in this.result) {
 					let model = this.result[x]
 					if (model.units >= 46 && model.units <= 70) {
 						this.pallets.f.push(model)
+						total += model.units
 					}
 				}
+				await this.asignPallet(total, 'f')
 			},
 			async g() {
+				let total = 0
 				for (let x in this.result) {
 					let model = this.result[x]
 					if (model.units >= 71 && model.units <= 99) {
 						this.pallets.g.push(model)
+						total += model.units
 					}
 				}
+				console.log(total)
+				await this.asignPallet(total, 'g')
 			},
 			async h() {
 				for (let x in this.result) {
@@ -406,11 +534,14 @@
 					}
 				}
 				for (let x = 0; x < this.pallets.h.length; x++) {
-					this.pallets.h[x].pallete = this.lastPallete + x
+					this.pallets.h[x].pallete = this.lastPallete + x + 1
 					this.pallets.h[x].status = true
+					this.totalPalletes['h'].push({
+						pallete: this.pallets.h[x].pallete,
+						units: this.pallets.h[x].units,
+					})
 				}
 				this.lastPallete = this.lastPallete + this.pallets.h.length
-				console.log(this.lastPallete)
 			},
 		},
 	}
