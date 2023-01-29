@@ -37,7 +37,7 @@
 
 			<q-separator dark inset />
 			<q-card-section>
-				<pre>{{ result }}</pre>
+				<pre>{{ pallets }}</pre>
 			</q-card-section>
 		</q-card>
 	</div>
@@ -129,11 +129,12 @@
 				}
 				this.result = arr
 				//Generacion de paletas
-				for (let x = 0; x < Math.ceil(total / this.top); x++) {
+				/* for (let x = 0; x < Math.ceil(total / this.top); x++) {
 					this.pallets.push(this.form.pallet + x)
 				}
 				console.log(total, Math.ceil(total / this.top), this.pallets)
-				await this.asignPallet(arr, Math.ceil(total / this.top))
+				//await this.asignPallet(arr, Math.ceil(total / this.top)) */
+				await this.h()
 			},
 			async asignPallet(arr, ptotal) {
 				let pal = this.form.pallet
@@ -159,64 +160,50 @@
 				console.log(this.asignacion)
 			},
 			async h() {
-				for (let x in this.data) {
-					if (this.data[x].units >= 100 && this.data[x].units <= 140) {
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
+				for (let x in this.result) {
+					console.log(this.result[x])
+					if (this.result[x].units >= 100 && this.result[x].units <= 140) {
+						this.pallets.h.push(this.result[x])
 					}
-	         if()
-					if (this.data[x].units > 140 && this.data[x].units <= 280) {
-						this.data[x].units = Math.ceil(this.data[x].units / 2)
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
+					if (this.result[x].units > 140 && this.result[x].units <= 280) {
+						this.result[x].units = Math.ceil(this.result[x].units / 2)
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
 					}
-					if (this.data[x].units > 280 && this.data[x].units <= 420) {
-						this.data[x].units = Math.ceil(this.data[x].units / 3)
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
+					if (this.result[x].units > 280 && this.result[x].units <= 420) {
+						this.result[x].units = Math.ceil(this.result[x].units / 3)
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
 					}
-					if (this.data[x].units > 420 && this.data[x].units <= 560) {
-						this.data[x].units = Math.ceil(this.data[x].units / 4)
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
+					if (this.result[x].units > 420 && this.result[x].units <= 560) {
+						this.result[x].units = Math.ceil(this.result[x].units / 4)
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
 					}
-					if (this.data[x].units > 560 && this.data[x].units <= 700) {
-						this.data[x].units = Math.ceil(this.data[x].units / 5)
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
-						this.data[x].units = this.data[x].units + 1
-						this.data[x].pallete = this.lastPallete++
-						this.pallets.h.push(this.data[x])
+					if (this.result[x].units > 560 && this.data[x].units <= 700) {
+						this.result[x].units = Math.ceil(this.data[x].units / 5)
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
+						this.result[x].units = this.result[x].units + 1
+						this.pallets.h.push(this.result[x])
 					}
-						this.data[x].status = true
+					this.result[x].status = true
 				}
+				console.log(this.pallets.h)
 			},
 		},
 	}
