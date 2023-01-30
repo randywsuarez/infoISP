@@ -53,7 +53,8 @@
 				files: null,
 				data: '',
 				form: [],
-				lastPallete: '',
+				lastPallete: 0,
+				totalP: '',
 				pallets: {
 					a: [],
 					b: [],
@@ -144,7 +145,7 @@
 				await this.f()
 				//await this.g()
 				await this.h()
-				console.log(this.totalPalletes)
+				console.log(this.totalP, this.totalPalletes)
 			},
 			async asignPallet(total, block) {
 				if (total < this.top) {
@@ -273,8 +274,10 @@
 						{ pallete: np5, units: tpallet5 }
 					)
 				}
+				this.totalP = this.totalP = Number(this.totalP) + Number(this.totalPalletes[block].length)
 			},
 			async a() {
+				let block = 'a'
 				let total = 0
 				for (let x in this.result) {
 					let model = this.result[x]
@@ -410,6 +413,8 @@
 						{ pallete: np5, units: tpallet5 }
 					)
 				}
+				this.lastPallete--
+				this.totalP = this.totalP = Number(this.totalP) + Number(this.totalPalletes[block].length)
 			},
 			async b() {
 				let total = 0
@@ -449,7 +454,9 @@
 						continue
 					}
 				}
-				this.lastPallete = pal
+				this.totalP = this.totalP = Number(this.totalP) + Number(this.totalPalletes[block].length)
+				this.lastPallete = pal - 1
+				console.log(this.lastPallete)
 			},
 			async d() {
 				let total = 0
@@ -500,6 +507,8 @@
 						continue
 					}
 				}
+				this.totalP = this.totalP = Number(this.totalP) + Number(this.totalPalletes[block].length)
+				console.log(Number(this.totalP) + Number(this.totalPalletes[block].length))
 				this.lastPallete = pal
 			},
 			async g() {
@@ -515,6 +524,7 @@
 				await this.asignPallet(total, 'g')
 			},
 			async h() {
+				let block = 'h'
 				for (let x in this.result) {
 					let model = JSON.parse(JSON.stringify(this.result[x]))
 					let model2 = JSON.parse(JSON.stringify(this.result[x]))
@@ -575,6 +585,7 @@
 					})
 				}
 				this.lastPallete = this.lastPallete + this.pallets.h.length
+				this.totalP = this.totalP = Number(this.totalP) + Number(this.totalPalletes[block].length)
 			},
 		},
 	}
