@@ -1,4 +1,5 @@
-import Vue from 'vue'
-import axios from 'axios'
+import instance from '../utils/axios'
 
-Vue.prototype.$axios = axios
+export default ({ Vue }) => {
+	Vue.prototype.$axios = instance
+}
