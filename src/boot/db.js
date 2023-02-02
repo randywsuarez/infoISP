@@ -223,6 +223,7 @@ export default ({ Vue, router }) => {
 						resolve(res)
 					})
 					.catch((e) => {
+						console.log(e)
 						if (e.data.error == 'token')
 							Dialog.create({
 								title: 'Error',
@@ -332,7 +333,7 @@ export default ({ Vue, router }) => {
 
 			var vm = this
 
-			return function() {
+			return function () {
 				vm.disconnect = true
 				socket.removeListener(
 					vm.d ? vm.path : vm.c + '_' + (vm.event_key || vm.event_key === 0 ? vm.event_key : ''),

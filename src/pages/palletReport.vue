@@ -3,25 +3,17 @@
 		<q-card dark bordered class="bg-grey-9" style="width: 95vw">
 			<q-card-section>
 				<div class="text-h6">Pallet Assignment</div>
-				<div class="text-subtitle2">by John Doe</div>
+				<div class="text-subtitle2">by Randy Suarez</div>
 			</q-card-section>
-
 			<q-separator dark inset />
-
 			<q-card-section class="col row">
 				<div class="col-md-6 col-xs-12">
-					<q-input
-						dark
-						outlined
-						v-model.number="form.npallet"
-						type="number"
-						filled
-						label="Amount Pallet"
-					/>
+					<rs-chip label="BOL" v-model="form.bol" />
 				</div>
 				<div class="col-md-6 col-xs-12">
 					<q-input
 						dark
+						color="white"
 						outlined
 						v-model.number="form.pallet"
 						type="number"
@@ -30,19 +22,26 @@
 					/>
 				</div>
 				<div class="col-md-6 col-xs-12">
-					<q-file v-model="files" label="files JSON" outlined use-chips dark />
+					<q-file v-model="files" label="files JSON" color="white" outlined use-chips dark />
 				</div>
+				<div class="col-md-6 col-xs-12"></div>
 				<q-btn label="Generate" color="black" class="col col-12 self-end q-mt-md" @click="getInfo()" />
 			</q-card-section>
-
 			<q-separator dark inset />
 			<q-card-section>
 				<div class="col row">
-					<q-card class="my-card" dark>
+					<q-card class="my-card q-ma-sm col-xs-6 col-md-6" dark v-for="(p, k) in tpallets" :key="k">
+						<q-card-section>
+							<div class="text-h6" bold>Pallet: {{ p.pallete }}</div>
+							<div class="text-subtitle2">Units: {{ p.units }}</div>
+						</q-card-section>
+						<pre>{{ form }}</pre>
+					</q-card>
+					<!-- <q-card class="my-card" dark>
 						<h1><b>1-5</b></h1>
 						<q-card-section>
-							<div class="text-h6">Our Changing Planet</div>
-							<div class="text-subtitle2">by John Doe</div>
+							<div class="text-h6">Small Pallets</div>
+							<div class="text-subtitle2">by Randy Suarez</div>
 						</q-card-section>
 						<q-card-section>
 							<p
@@ -55,29 +54,36 @@
 								{{ value.prod_num }} - {{ value.units }} - {{ value.pallete }}
 							</p>
 						</q-card-section>
-					</q-card>
+					</q-card> -->
 				</div>
 			</q-card-section>
-			<q-separator dark inset />
+			<!-- <q-separator dark inset />
 			<q-card-section>
 				<div class="col row">
-					<pre class="col-md-4">{{ pallets }}</pre>
-					<pre class="col-md-4">{{ totalPalletes }}</pre>
-					<pre class="col-md-4">{{ todos }}</pre>
+					<pre class="col-md-3">{{ pallets }}</pre>
+					<pre class="col-md-3">{{ totalPalletes }}</pre>
+					<pre class="col-md-3">{{ todos }}</pre>
+					<pre class="col-md-3">{{ tpallets }}</pre>
 				</div>
-			</q-card-section>
+			</q-card-section> -->
 		</q-card>
 	</div>
 </template>
 
 <script>
+	import { Loading, QSpinnerGears } from 'quasar'
+	import rsChip from 'components/rsChip.vue'
 	export default {
+		components: {
+			rsChip,
+		},
 		data() {
 			return {
 				files: null,
 				data: '',
 				form: [],
 				lastPallete: 0,
+				tpallets: [],
 				totalP: '',
 				pallets: {
 					a: [],
@@ -104,6 +110,23 @@
 			}
 		},
 		methods: {
+			async rsSave() {
+				Loading.hide()
+				for (let x of this.data) {
+					await this.$db
+						.doc('inventory')
+						.add({
+							serial: x.serial,
+							bol: x.bol,
+							po: x.po,
+							prod_num: x.prod_num,
+						})
+						.then((v) => {
+							console.log(v)
+							Loading.hide()
+						})
+				}
+			},
 			async getInfo() {
 				this.lastPallete = this.form.pallet
 				const fs = require('fs')
@@ -171,6 +194,7 @@
 				//await this.g()
 				await this.h()
 				console.log(this.totalP, this.totalPalletes, this.todos.length)
+				await this.rsSave()
 			},
 			async asignPallet(total, block) {
 				if (total < this.top) {
@@ -180,6 +204,7 @@
 						this.pallets[block][x].group = block
 						this.todos.push(this.pallets[block][x])
 						this.totalPalletes[block].push({ pallete: np1, units: tpallet1 })
+						this.tpallets.push({ pallete: np1, units: tpallet1 })
 					}
 				}
 				let tpallet1 = 0
@@ -213,6 +238,7 @@
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 }
 					)
+					this.tpallets.push({ pallete: np1, units: tpallet1 }, { pallete: np2, units: tpallet2 })
 				}
 				if (total > this.top * 2 && total <= this.top * 3) {
 					for (let x = 0; x < this.pallets[block].length; x++) {
@@ -238,6 +264,11 @@
 					this.lastPallete += 3
 					this.pallets[block][x].group = block
 					this.totalPalletes[block].push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 }
+					)
+					this.tpallets.push(
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 },
 						{ pallete: np3, units: tpallet3 }
@@ -269,6 +300,12 @@
 					this.lastPallete += 4
 					this.pallets[block][x].group = block
 					this.totalPalletes[block].push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 },
+						{ pallete: np4, units: tpallet4 }
+					)
+					this.tpallets.push(
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 },
 						{ pallete: np3, units: tpallet3 },
@@ -312,6 +349,13 @@
 						{ pallete: np4, units: tpallet4 },
 						{ pallete: np5, units: tpallet5 }
 					)
+					this.tpallets.push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 },
+						{ pallete: np4, units: tpallet4 },
+						{ pallete: np5, units: tpallet5 }
+					)
 					this.todos.push(this.pallets[block][x])
 				}
 				this.totalP = this.totalP = Number(this.totalP) + Number(this.totalPalletes[block].length)
@@ -333,6 +377,7 @@
 						this.pallets.a[x].status = true
 						this.pallets[block][x].group = block
 						this.totalPalletes['a'].push({ pallete: np1, units: tpallet1 })
+						this.tpallets.push({ pallete: np1, units: tpallet1 })
 					}
 				}
 
@@ -367,6 +412,7 @@
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 }
 					)
+					this.tpallets.push({ pallete: np1, units: tpallet1 }, { pallete: np2, units: tpallet2 })
 				}
 				if (total > this.top * 2 && total <= this.top * 3) {
 					for (let x = 0; x < this.pallets.a.length; x++) {
@@ -391,9 +437,9 @@
 					this.lastPallete += 3
 					this.totalPalletes['a'].push(
 						{ pallete: np1, units: tpallet1 },
-						{ pallete: np2, units: tpallet2 },
-						{ pallete: np3, units: tpallet3 }
+						{ pallete: np2, units: tpallet2 }
 					)
+					this.tpallets.push({ pallete: np1, units: tpallet1 }, { pallete: np2, units: tpallet2 })
 				}
 				if (total > this.top * 3 && total <= this.top * 4) {
 					for (let x = 0; x < this.pallets.a.length; x++) {
@@ -423,6 +469,12 @@
 					}
 					this.lastPallete += 4
 					this.totalPalletes['a'].push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 },
+						{ pallete: np4, units: tpallet4 }
+					)
+					this.tpallets.push(
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 },
 						{ pallete: np3, units: tpallet3 },
@@ -469,6 +521,13 @@
 						{ pallete: np4, units: tpallet4 },
 						{ pallete: np5, units: tpallet5 }
 					)
+					this.tpallets.push(
+						{ pallete: np1, units: tpallet1 },
+						{ pallete: np2, units: tpallet2 },
+						{ pallete: np3, units: tpallet3 },
+						{ pallete: np4, units: tpallet4 },
+						{ pallete: np5, units: tpallet5 }
+					)
 				}
 				this.lastPallete--
 				this.totalP = this.totalP = Number(this.totalP) + Number(this.totalPalletes[block].length)
@@ -507,6 +566,7 @@
 					}
 					if (!total == 0) {
 						this.totalPalletes[block].push({ pallete: pal, units: total })
+						this.tpallets.push({ pallete: pal, units: total })
 						pal++
 					} else {
 						continue
@@ -564,6 +624,7 @@
 					}
 					if (!total == 0) {
 						this.totalPalletes[block].push({ pallete: pal, units: total })
+						this.tpallets.push({ pallete: pal, units: total })
 						pal++
 					} else {
 						continue
@@ -646,6 +707,10 @@
 					this.pallets.h[x].status = true
 					this.pallets[block][x].group = block
 					this.totalPalletes['h'].push({
+						pallete: this.pallets.h[x].pallete,
+						units: this.pallets.h[x].units,
+					})
+					this.tpallets.push({
 						pallete: this.pallets.h[x].pallete,
 						units: this.pallets.h[x].units,
 					})
