@@ -1,9 +1,9 @@
 <template>
-	<div class="q-pa-md row items-start q-gutter-md">
-		<q-card dark bordered class="bg-grey-9" style="width: 95vw">
+	<div class="q-pa-md row items-start q-gutter-md q-mt-sm" style="justify-content: center">
+		<q-card dark bordered class="bg-grey-9 col-md-7 col-sm-12">
 			<q-card-section>
 				<div class="text-h6">Pallet Assignment</div>
-				<div class="text-subtitle2">by Randy Suarez</div>
+				<div class="text-subtitle2">Asignacion de Paleta</div>
 			</q-card-section>
 			<q-separator dark inset />
 			<q-card-section class="col row">
@@ -14,18 +14,82 @@
 					<q-input
 						dark
 						color="white"
-						outlined
+						outline
 						v-model.number="form.pallet"
 						type="number"
-						filled
 						label="Init Pallete"
 					/>
 				</div>
-				<div class="col-md-6 col-xs-12">
-					<q-file v-model="files" label="files JSON" color="white" outlined use-chips dark />
+				<div class="col-md-12 col-xs-12">
+					<q-file
+						v-model="files"
+						label="files JSON"
+						color="white"
+						accept=".json"
+						outline
+						use-chips
+						dark
+					/>
+				</div>
+				<q-btn label="Generate" color="black" class="col col-12 self-end q-mt-md" @click="getInfo()" />
+			</q-card-section>
+		</q-card>
+		<q-card dark bordered class="bg-grey-9 col-md-4 col-sm-12">
+			<q-card-section>
+				<div class="text-h6">Import - Export Assignment Pallets</div>
+				<div class="text-subtitle2">Importar - Exportar asignacion de Paletas</div>
+			</q-card-section>
+			<q-separator dark inset />
+			<q-card-section class="col row">
+				<!-- <div class="col-md-6 col-xs-12">
+					<q-file
+						v-model="files_exp"
+						label="files JSON by Export"
+						color="white"
+						outline
+						use-chips
+						accept=".json"
+						dark
+					/>
+				</div> -->
+				<div class="col-md-12 col-xs-12">
+					<q-file
+						v-model="files_imp"
+						label="files XLSX by Import"
+						color="white"
+						outline
+						use-chips
+						accept=".xlsx"
+						dark
+					/>
 				</div>
 				<div class="col-md-6 col-xs-12"></div>
-				<q-btn label="Generate" color="black" class="col col-12 self-end q-mt-md" @click="getInfo()" />
+				<q-btn-group spread class="col-sm-12">
+					<q-btn
+						flat
+						label="Export"
+						color="white"
+						class="col col-12 self-end q-mt-md"
+						@click="expExcel()"
+					/>
+					<q-btn
+						outline
+						label="Import"
+						color="white"
+						class="col col-12 self-end q-mt-md"
+						@click="getInfo()"
+					/>
+				</q-btn-group>
+			</q-card-section>
+		</q-card>
+		<q-card dark bordered class="bg-grey-9 col-md-11 col-sm-12">
+			<q-card-section>
+				<div class="text-h6">Product List</div>
+				<div class="text-subtitle2">Lista de productos</div>
+			</q-card-section>
+			<q-separator dark inset />
+			<q-card-section class="col row">
+				<pre>{{ todos }}</pre>
 			</q-card-section>
 			<q-separator dark inset />
 			<q-card-section>
@@ -35,37 +99,9 @@
 							<div class="text-h6" bold>Pallet: {{ p.pallete }}</div>
 							<div class="text-subtitle2">Units: {{ p.units }}</div>
 						</q-card-section>
-						<pre>{{ form }}</pre>
 					</q-card>
-					<!-- <q-card class="my-card" dark>
-						<h1><b>1-5</b></h1>
-						<q-card-section>
-							<div class="text-h6">Small Pallets</div>
-							<div class="text-subtitle2">by Randy Suarez</div>
-						</q-card-section>
-						<q-card-section>
-							<p
-								class="col-2 q-ma-sm"
-								style="position: clean"
-								dark
-								v-for="(value, k) in pallets.a"
-								:key="k"
-							>
-								{{ value.prod_num }} - {{ value.units }} - {{ value.pallete }}
-							</p>
-						</q-card-section>
-					</q-card> -->
 				</div>
 			</q-card-section>
-			<!-- <q-separator dark inset />
-			<q-card-section>
-				<div class="col row">
-					<pre class="col-md-3">{{ pallets }}</pre>
-					<pre class="col-md-3">{{ totalPalletes }}</pre>
-					<pre class="col-md-3">{{ todos }}</pre>
-					<pre class="col-md-3">{{ tpallets }}</pre>
-				</div>
-			</q-card-section> -->
 		</q-card>
 	</div>
 </template>
@@ -73,6 +109,8 @@
 <script>
 	import { Loading, QSpinnerGears } from 'quasar'
 	import rsChip from 'components/rsChip.vue'
+	import { required, email } from 'vuelidate/lib/validators'
+	import xlsx from 'json-as-xlsx'
 	export default {
 		components: {
 			rsChip,
@@ -80,8 +118,10 @@
 		data() {
 			return {
 				files: null,
+				files_imp: null,
+				files_exp: null,
 				data: '',
-				form: [],
+				form: {},
 				lastPallete: 0,
 				tpallets: [],
 				totalP: '',
@@ -109,9 +149,16 @@
 				todos: [],
 			}
 		},
+		validations: {
+			form: {
+				bol: { required },
+				pallet: { required },
+			},
+		},
 		methods: {
 			async rsSave() {
-				Loading.hide()
+				let prod_number = {}
+				this.$q.loading.show()
 				for (let x of this.data) {
 					await this.$db
 						.doc('inventory')
@@ -120,14 +167,36 @@
 							bol: x.bol,
 							po: x.po,
 							prod_num: x.prod_num,
+							type: x.prod_name.includes('Crhomebook') ? 'Crhomebook' : 'Laptop',
+							size: x.prod_name.includes('11')
+								? 11
+								: x.prod_name.includes('13')
+								? 13
+								: x.prod_name.includes('14')
+								? 14
+								: x.prod_name.includes('15')
+								? 15
+								: x.prod_name.includes('16')
+								? 16
+								: 17,
+							status: 0,
 						})
 						.then((v) => {
-							console.log(v)
+							//console.log(v)
 							Loading.hide()
 						})
 				}
 			},
 			async getInfo() {
+				this.$v.form.$touch()
+				if (this.$v.form.$error) {
+					console.log(this.$v.form)
+					this.$q.notify({
+						type: 'negative',
+						message: `Error: Check the fields.`,
+					})
+					return
+				}
 				this.lastPallete = this.form.pallet
 				const fs = require('fs')
 				fs.readFile(this.files.path, 'utf8', (err, jsonString) => {
@@ -195,6 +264,7 @@
 				await this.h()
 				console.log(this.totalP, this.totalPalletes, this.todos.length)
 				await this.rsSave()
+				await this.savePallets()
 			},
 			async asignPallet(total, block) {
 				if (total < this.top) {
@@ -202,6 +272,7 @@
 						this.pallets[block][x].pallete = this.lastPallete
 						this.pallets[block][x].status = true
 						this.pallets[block][x].group = block
+						this.pallets[block][x].bol = this.form.bol.toString()
 						this.todos.push(this.pallets[block][x])
 						this.totalPalletes[block].push({ pallete: np1, units: tpallet1 })
 						this.tpallets.push({ pallete: np1, units: tpallet1 })
@@ -222,11 +293,13 @@
 					for (let x = 0; x < this.pallets[block].length; x++) {
 						if (tpallet1 + this.pallets[block][x].units <= Math.floor(total / 2)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets[block][x].pallete = np1
 							this.pallets[block][x].status = true
 							tpallet1 += this.pallets[block][x].units
 						} else {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets[block][x].pallete = np2
 							this.pallets[block][x].status = true
 							tpallet2 += this.pallets[block][x].units
@@ -244,17 +317,20 @@
 					for (let x = 0; x < this.pallets[block].length; x++) {
 						if (tpallet1 + this.pallets[block][x].units <= Math.floor(total / 3)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets[block][x].pallete = np1
 							this.pallets[block][x].status = true
 							tpallet1 += this.pallets[block][x].units
 						}
 						if (tpallet2 + this.pallets[block][x].units <= Math.floor(total / 3)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets[block][x].pallete = np2
 							this.pallets[block][x].status = true
 							tpallet2 += this.pallets[block][x].units
 						} else {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets[block][x].pallete = np3
 							this.pallets[block][x].status = true
 							tpallet3 += this.pallets[block][x].units
@@ -263,6 +339,7 @@
 					}
 					this.lastPallete += 3
 					this.pallets[block][x].group = block
+					this.pallets[block][x].bol = this.form.bol.toString()
 					this.totalPalletes[block].push(
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 },
@@ -299,6 +376,7 @@
 					}
 					this.lastPallete += 4
 					this.pallets[block][x].group = block
+					this.pallets[block][x].bol = this.form.bol.toString()
 					this.totalPalletes[block].push(
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 },
@@ -342,6 +420,7 @@
 					}
 					this.lastPallete += 5
 					this.pallets[block][x].group = block
+					this.pallets[block][x].bol = this.form.bol.toString()
 					this.totalPalletes[block].push(
 						{ pallete: np1, units: tpallet1 },
 						{ pallete: np2, units: tpallet2 },
@@ -376,6 +455,7 @@
 						this.pallets.a[x].pallete = this.lastPallete
 						this.pallets.a[x].status = true
 						this.pallets[block][x].group = block
+						this.pallets[block][x].bol = this.form.bol.toString()
 						this.totalPalletes['a'].push({ pallete: np1, units: tpallet1 })
 						this.tpallets.push({ pallete: np1, units: tpallet1 })
 					}
@@ -396,11 +476,13 @@
 					for (let x = 0; x < this.pallets.a.length; x++) {
 						if (tpallet1 + this.pallets.a[x].units <= Math.floor(total / 2)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np1
 							this.pallets.a[x].status = true
 							tpallet1 += this.pallets.a[x].units
 						} else {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np2
 							this.pallets.a[x].status = true
 							tpallet2 += this.pallets.a[x].units
@@ -418,17 +500,20 @@
 					for (let x = 0; x < this.pallets.a.length; x++) {
 						if (tpallet1 + this.pallets.a[x].units <= Math.floor(total / 3)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np1
 							this.pallets.a[x].status = true
 							tpallet1 += this.pallets.a[x].units
 						}
 						if (tpallet2 + this.pallets.a[x].units <= Math.floor(total / 3)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np2
 							this.pallets.a[x].status = true
 							tpallet2 += this.pallets.a[x].units
 						} else {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np3
 							this.pallets.a[x].status = true
 							tpallet3 += this.pallets.a[x].units
@@ -445,23 +530,27 @@
 					for (let x = 0; x < this.pallets.a.length; x++) {
 						if (tpallet1 + this.pallets.a[x].units <= Math.floor(total / 4)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np1
 							this.pallets.a[x].status = true
 							tpallet1 += this.pallets.a[x].units
 						}
 						if (tpallet2 + this.pallets.a[x].units <= Math.floor(total / 4)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np2
 							this.pallets.a[x].status = true
 							tpallet2 += this.pallets.a[x].units
 						}
 						if (tpallet3 + this.pallets.a[x].units <= Math.floor(total / 4)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np3
 							this.pallets.a[x].status = true
 							tpallet3 += this.pallets.a[x].units
 						} else {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np4
 							this.pallets.a[x].status = true
 							tpallet4 += this.pallets.a[x].units
@@ -485,29 +574,34 @@
 					for (let x = 0; x < this.pallets.a.length; x++) {
 						if (tpallet1 + this.pallets.a[x].units <= Math.floor(total / 5)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np1
 							this.pallets.a[x].status = true
 							tpallet1 += this.pallets.a[x].units
 						}
 						if (tpallet2 + this.pallets.a[x].units <= Math.floor(total / 5)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np2
 							this.pallets.a[x].status = true
 							tpallet2 += this.pallets.a[x].units
 						}
 						if (tpallet3 + this.pallets.a[x].units <= Math.floor(total / 5)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np3
 							this.pallets.a[x].status = true
 							tpallet3 += this.pallets.a[x].units
 						}
 						if (tpallet4 + this.pallets.a[x].units <= Math.floor(total / 5)) {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np4
 							this.pallets.a[x].status = true
 							tpallet4 += this.pallets.a[x].units
 						} else {
 							this.pallets[block][x].group = block
+							this.pallets[block][x].bol = this.form.bol.toString()
 							this.pallets.a[x].pallete = np5
 							this.pallets.a[x].status = true
 							tpallet5 += this.pallets.a[x].units
@@ -561,6 +655,7 @@
 							this.pallets[block][f].pallete = pal
 							this.pallets[block][f].status = true
 							this.pallets[block][f].group = block
+							this.pallets[block][f].bol = this.form.bol.toString()
 							total += this.pallets[block][f].units
 						}
 					}
@@ -706,6 +801,7 @@
 					this.pallets.h[x].pallete = this.lastPallete + x
 					this.pallets.h[x].status = true
 					this.pallets[block][x].group = block
+					this.pallets[block][x].bol = this.form.bol.toString()
 					this.totalPalletes['h'].push({
 						pallete: this.pallets.h[x].pallete,
 						units: this.pallets.h[x].units,
@@ -718,6 +814,64 @@
 				}
 				this.lastPallete = this.lastPallete + this.pallets.h.length
 				this.totalP = this.totalP = Number(this.totalP) + Number(this.totalPalletes[block].length)
+			},
+			async expExcel() {
+				let data = [
+					{
+						sheet: 'Assing Pallets',
+						columns: [
+							{
+								label: 'Prod Num',
+								value: 'prod_num',
+							},
+							{
+								label: 'Units',
+								value: 'units',
+							},
+							{
+								label: 'Pallete',
+								value: 'pallete',
+							},
+							{
+								label: 'Group',
+								value: 'group',
+							},
+						],
+						content: this.todos,
+					},
+					{
+						sheet: 'Pallets',
+						columns: [
+							{
+								label: 'Pallete',
+								value: 'pallete',
+							},
+							{
+								label: 'Units',
+								value: 'units',
+							},
+						],
+						content: this.tpallets,
+					},
+				]
+				let settings = {
+					fileName: `${this.form.bol.toString()}.xlsx`, // Name of the resulting spreadsheet
+					extraLength: 3, // A bigger number means that columns will be wider
+					writeMode: 'writeFile', // The available parameters are 'WriteFile' and 'write'. This setting is optional. Useful in such cases https://docs.sheetjs.com/docs/solutions/output#example-remote-file
+					writeOptions: {}, // Style options from https://docs.sheetjs.com/docs/api/write-options
+					RTL: false, // Display the columns from right-to-left (the default value is false)
+				}
+				await xlsx(data, settings)
+			},
+			async savePallets() {
+				this.$db
+					.funcAdmin('modulos/pallets/assignPallet', {
+						pallets: this.tpallets,
+						assign: this.todos,
+					})
+					.then((v) => {
+						console.log(v)
+					})
 			},
 		},
 	}

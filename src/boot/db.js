@@ -223,7 +223,7 @@ export default ({ Vue, router }) => {
 						resolve(res)
 					})
 					.catch((e) => {
-						console.log(e)
+						//console.log(e)
 						if (e.data.error == 'token')
 							Dialog.create({
 								title: 'Error',

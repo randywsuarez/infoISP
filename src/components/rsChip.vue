@@ -4,7 +4,7 @@
 		ref="myChipInput"
 		v-model="modelMultiple"
 		multiple
-		outlined
+		outline
 		use-chips
 		dark
 		use-input
@@ -31,9 +31,7 @@
 <script>
 	export default {
 		props: {
-			value: {
-				default: [],
-			},
+			value: '',
 			label: '',
 		},
 		data() {
@@ -54,12 +52,13 @@
 			doStuff(val) {
 				this.showOk = true
 				this.inputValue = val
+				this.$emit('input', this.modelMultiple)
 			},
 			doOtherStuff() {
 				this.showOk = false
 				this.$refs.myChipInput.add(this.inputValue)
 				this.$refs.myChipInput.updateInputValue('')
-				this.$emit('input', this.inputValue)
+				//this.$emit('input', this.modelMultiple)
 			},
 		},
 	}
