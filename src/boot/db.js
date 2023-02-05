@@ -418,7 +418,8 @@ export default ({ Vue, router }) => {
 						},
 					})
 						.then((res) => {
-							if (res.result) resolve(res.data)
+							console.log(res)
+							if (res.data.result) resolve(res.data.data)
 							else {
 								console.log(res)
 								Dialog.create({

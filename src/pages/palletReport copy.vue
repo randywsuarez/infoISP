@@ -89,7 +89,7 @@
 			</q-card-section>
 			<q-separator dark inset />
 			<q-card-section class="col row">
-				<pre>{{ result }}</pre>
+				<pre>{{ todos }}</pre>
 			</q-card-section>
 			<q-separator dark inset />
 			<q-card-section>
@@ -146,7 +146,7 @@
 				result: '',
 				top: 140,
 				generate: false,
-				todos: {},
+				todos: [],
 			}
 		},
 		validations: {
@@ -154,14 +154,11 @@
 				bol: { required },
 				pallet: { required },
 			},
-			files: { required },
-			files_imp: { required },
-			files_exp: { required },
 		},
 		methods: {
 			async rsSave() {
+				let prod_number = {}
 				this.$q.loading.show()
-				console.log(this.data.length)
 				for (let x of this.data) {
 					await this.$db
 						.doc('inventory')
@@ -182,34 +179,18 @@
 								: x.prod_name.includes('16')
 								? 16
 								: 17,
-							adapter: null,
-							pallete: null,
-							group: null,
 							status: 0,
 						})
-						.then(async (v) => {
-							console.log(x.serial)
+						.then((v) => {
+							//console.log(v)
+							Loading.hide()
 						})
 				}
-				await this.$db
-					.funcAdmin('modules/pallets/generatePallets', {
-						generate: false,
-						top: this.top,
-						lastPallete: this.lastPallete,
-					})
-					.then((val) => {
-						console.log(val)
-						this.result = val
-						/* this.todos['small'] = val.all.small
-								this.todos['big'] = val.all.big
-								this.tpallets = val.pallets */
-					})
-				this.$q.loading.hide()
 			},
 			async getInfo() {
 				this.$v.form.$touch()
-				if (this.$v.form.$error || this.$v.files.$error) {
-					console.log(this.$v.file)
+				if (this.$v.form.$error) {
+					console.log(this.$v.form)
 					this.$q.notify({
 						type: 'negative',
 						message: `Error: Check the fields.`,
@@ -225,8 +206,7 @@
 					}
 					try {
 						this.data = JSON.parse(jsonString)
-						//this.proInfo()
-						this.rsSave()
+						this.proInfo()
 					} catch (err) {
 						console.log('Error parsing JSON string:', err)
 					}
