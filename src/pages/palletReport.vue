@@ -7,9 +7,9 @@
 			</q-card-section>
 			<q-separator dark inset />
 			<q-card-section class="col row">
-				<div class="col-md-6 col-xs-12">
+				<!-- <div class="col-md-6 col-xs-12">
 					<rs-chip label="BOL" v-model="form.bol" />
-				</div>
+				</div> -->
 				<div class="col-md-6 col-xs-12">
 					<q-input
 						dark
@@ -17,10 +17,10 @@
 						outline
 						v-model.number="form.pallet"
 						type="number"
-						label="Init Pallete"
+						label="Number Pallet"
 					/>
 				</div>
-				<div class="col-md-12 col-xs-12">
+				<div class="col-md-6 col-xs-12">
 					<q-file
 						v-model="files"
 						label="files JSON"
@@ -88,13 +88,16 @@
 				<div class="text-subtitle2">Lista de productos</div>
 			</q-card-section>
 			<q-separator dark inset />
-			<q-card-section class="col row">
-				<pre>{{ result }}</pre>
-			</q-card-section>
+			<q-card-section class="col row"> </q-card-section>
 			<q-separator dark inset />
 			<q-card-section>
 				<div class="col row">
-					<q-card class="my-card q-ma-sm col-xs-6 col-md-6" dark v-for="(p, k) in tpallets" :key="k">
+					<q-card
+						class="my-card q-ma-sm col-xs-6 col-md-6"
+						dark
+						v-for="(p, k) in result.pallets"
+						:key="k"
+					>
 						<q-card-section>
 							<div class="text-h6" bold>Pallet: {{ p.pallete }}</div>
 							<div class="text-subtitle2">Units: {{ p.units }}</div>
@@ -151,7 +154,7 @@
 		},
 		validations: {
 			form: {
-				bol: { required },
+				//bol: { required },
 				pallet: { required },
 			},
 			files: { required },
@@ -167,6 +170,7 @@
 						.doc('inventory')
 						.add({
 							serial: x.serial,
+							alt_serial: '',
 							bol: x.bol,
 							po: x.po,
 							prod_num: x.prod_num,
@@ -182,10 +186,11 @@
 								: x.prod_name.includes('16')
 								? 16
 								: 17,
-							adapter: null,
-							pallete: null,
-							group: null,
+							adapter: '',
+							pallete: '',
+							group: '',
 							status: 0,
+							generate: 'a',
 						})
 						.then(async (v) => {
 							console.log(x.serial)
@@ -195,11 +200,17 @@
 					.funcAdmin('modules/pallets/generatePallets', {
 						generate: false,
 						top: this.top,
-						lastPallete: this.lastPallete,
+						lastPallete: this.lastPallete - 1,
 					})
 					.then((val) => {
 						console.log(val)
 						this.result = val
+						let aux = document.createElement('input')
+						aux.setAttribute('value', this.result.devices)
+						document.body.appendChild(aux)
+						aux.select()
+						document.execCommand('copy')
+						document.body.removeChild(aux)
 						/* this.todos['small'] = val.all.small
 								this.todos['big'] = val.all.big
 								this.tpallets = val.pallets */
@@ -856,8 +867,16 @@
 								label: 'Group',
 								value: 'group',
 							},
+							{
+								label: 'Adapter',
+								value: 'adapter',
+							},
+							{
+								label: 'Size',
+								value: 'size',
+							},
 						],
-						content: this.todos,
+						content: this.result.devices,
 					},
 					{
 						sheet: 'Pallets',
@@ -871,11 +890,11 @@
 								value: 'units',
 							},
 						],
-						content: this.tpallets,
+						content: this.result.pallets,
 					},
 				]
 				let settings = {
-					fileName: `${this.form.bol.toString()}.xlsx`, // Name of the resulting spreadsheet
+					fileName: `${this.result.bol.toString()}.xlsx`, // Name of the resulting spreadsheet
 					extraLength: 3, // A bigger number means that columns will be wider
 					writeMode: 'writeFile', // The available parameters are 'WriteFile' and 'write'. This setting is optional. Useful in such cases https://docs.sheetjs.com/docs/solutions/output#example-remote-file
 					writeOptions: {}, // Style options from https://docs.sheetjs.com/docs/api/write-options
