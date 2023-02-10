@@ -23,6 +23,7 @@
 </template>
 
 <script>
+	import axios from 'axios'
 	export default {
 		data() {
 			return {
@@ -139,42 +140,34 @@
 						units: 7,
 					},
 				],
+				serial: 'asdasdas',
 			}
 		},
+		methods: {
+			async test(data) {
+				console.log(data, this.serial)
+				console.log(data.includes('Error'))
+				const regex = /\<h1\>([\w\s]*)\<\/h1\>/g
+
+				console.log(data.match(regex))
+			},
+		},
 		async mounted() {
-			const data = 'serial=C1L13402GG'
-
-			const xhr = new XMLHttpRequest()
-			xhr.withCredentials = true
-
-			xhr.addEventListener('readystatechange', function () {
-				if (this.readyState === this.DONE) {
-					console.log(this.responseText.includes('Error'))
-					console.log(this.responseText.split('<h1>')[1])
-				}
-			})
-
-			xhr.open('POST', 'http://imager./inv/scanimagedchrome.py')
-			xhr.setRequestHeader(
-				'Accept',
-				'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
-			)
-			xhr.setRequestHeader('Accept-Encoding', 'gzip, deflate')
-			xhr.setRequestHeader('Accept-Language', 'en-US,en;q=0.9,es;q=0.8')
-			xhr.setRequestHeader('Cache-Control', 'max-age=0')
-			xhr.setRequestHeader('Connection', 'keep-alive')
-			xhr.setRequestHeader('Content-Length', '17')
-			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-			xhr.setRequestHeader('Host', 'imager.')
-			xhr.setRequestHeader('Origin', 'http://imager.')
-			xhr.setRequestHeader('Referer', 'http://imager./scanimagedchrome.php')
-			xhr.setRequestHeader('Upgrade-Insecure-Requests', '1')
-			xhr.setRequestHeader(
-				'User-Agent',
-				'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
-			)
-
-			xhr.send(data)
+			let options = {
+				method: 'POST',
+				url: 'http://image./inv/scanimagedchrome.py',
+				data: { serial: 'C1L13402GG' },
+			}
+			axios
+				.request(options)
+				.then(function (response) {
+					console.log('save')
+					console.log(response.data)
+				})
+				.catch(function (error) {
+					console.error(error)
+					Loading.hide()
+				})
 		},
 	}
 </script>
