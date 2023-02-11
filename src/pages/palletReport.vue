@@ -170,10 +170,11 @@
 						.doc('inventory')
 						.add({
 							serial: x.serial,
-							alt_serial: '',
+							alt_serial: x.alt_serial != '' ? x.alt_serial : '',
 							bol: x.bol,
 							po: x.po,
-							prod_num: x.prod_num,
+							//prod_num: x.prod_num,
+							prod_num: '',
 							type: x.prod_name.includes('Crhomebook') ? 'Crhomebook' : 'Laptop',
 							size: x.prod_name.includes('11')
 								? 11
@@ -189,7 +190,7 @@
 							adapter: '',
 							pallete: '',
 							group: '',
-							status: 0,
+							status: x.in_fishbowl == 'y' ? 2 : 0,
 							generate: 'a',
 						})
 						.then(async (v) => {
