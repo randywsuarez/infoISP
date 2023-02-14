@@ -77,7 +77,7 @@
 						label="Import"
 						color="white"
 						class="col col-12 self-end q-mt-md"
-						@click="getInfo()"
+						@click="impExcel()"
 					/>
 				</q-btn-group>
 			</q-card-section>
@@ -114,6 +114,7 @@
 	import rsChip from 'components/rsChip.vue'
 	import { required, email } from 'vuelidate/lib/validators'
 	import xlsx from 'json-as-xlsx'
+	import excel from 'simple-excel-to-json'
 	export default {
 		components: {
 			rsChip,
@@ -173,8 +174,8 @@
 							alt_serial: x.alt_serial != '' ? x.alt_serial : '',
 							bol: x.bol,
 							po: x.po,
-							//prod_num: x.prod_num,
-							prod_num: '',
+							prod_num: x.prod_num,
+							//prod_num: '',
 							type: x.prod_name.includes('Crhomebook') ? 'Crhomebook' : 'Laptop',
 							size: x.prod_name.includes('11')
 								? 11
@@ -913,6 +914,73 @@
 						console.log(v)
 					})
 			},
+			async impExcel() {
+				console.log(this.files_imp)
+				let doc = excel.parseXls2Json(this.files_imp.path)
+
+				await this.$db
+					.funcAdmin('modules/pallets/importPallets', {
+						data: doc,
+					})
+					.then((val) => {})
+				console.log(doc)
+			},
+		},
+		async expExcel() {
+			let data = [
+				{
+					sheet: 'Assing Pallets',
+					columns: [
+						{
+							label: 'Prod Num',
+							value: 'prod_num',
+						},
+						{
+							label: 'Units',
+							value: 'units',
+						},
+						{
+							label: 'Pallete',
+							value: 'pallete',
+						},
+						{
+							label: 'Group',
+							value: 'group',
+						},
+						{
+							label: 'Adapter',
+							value: 'adapter',
+						},
+						{
+							label: 'Size',
+							value: 'size',
+						},
+					],
+					content: this.result.devices,
+				},
+				{
+					sheet: 'Pallets',
+					columns: [
+						{
+							label: 'Pallete',
+							value: 'pallete',
+						},
+						{
+							label: 'Units',
+							value: 'units',
+						},
+					],
+					content: this.result.pallets,
+				},
+			]
+			let settings = {
+				fileName: `${this.result.bol.toString()}.xlsx`, // Name of the resulting spreadsheet
+				extraLength: 3, // A bigger number means that columns will be wider
+				writeMode: 'writeFile', // The available parameters are 'WriteFile' and 'write'. This setting is optional. Useful in such cases https://docs.sheetjs.com/docs/solutions/output#example-remote-file
+				writeOptions: {}, // Style options from https://docs.sheetjs.com/docs/api/write-options
+				RTL: false, // Display the columns from right-to-left (the default value is false)
+			}
+			await xlsx(data, settings)
 		},
 	}
 </script>
