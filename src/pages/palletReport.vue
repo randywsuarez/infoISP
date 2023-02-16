@@ -165,7 +165,7 @@
 		methods: {
 			async rsSave() {
 				this.$q.loading.show()
-				console.log(this.data.length)
+				console.log(this.data)
 				for (let x of this.data) {
 					await this.$db
 						.doc('inventory')
@@ -175,19 +175,8 @@
 							bol: x.bol,
 							po: x.po,
 							prod_num: x.prod_num,
-							//prod_num: '',
-							type: x.prod_name.includes('Crhomebook') ? 'Crhomebook' : 'Laptop',
-							size: x.prod_name.includes('11')
-								? 11
-								: x.prod_name.includes('13')
-								? 13
-								: x.prod_name.includes('14')
-								? 14
-								: x.prod_name.includes('15')
-								? 15
-								: x.prod_name.includes('16')
-								? 16
-								: 17,
+							type: '',
+							size: new Number(),
 							adapter: '',
 							pallete: '',
 							group: '',
