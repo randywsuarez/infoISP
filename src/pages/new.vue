@@ -23,7 +23,7 @@
 </template>
 
 <script>
-	import axios from 'axios'
+	import si from 'systeminformation'
 	import { exec } from 'child_process'
 	export default {
 		data() {
@@ -192,6 +192,14 @@
 
 				console.log('Información de la tarjeta gráfica:', graphicsCardInfo)
 			})
+			si
+				.graphics()
+				.then((data) => {
+					console.log('Información de la tarjeta gráfica:', data.controllers[0])
+				})
+				.catch((error) => {
+					console.error(`Error al obtener la información de la tarjeta gráfica: ${error}`)
+				})
 		},
 	}
 </script>
