@@ -24,6 +24,7 @@
 
 <script>
 	import axios from 'axios'
+	import { exec } from 'child_process'
 	export default {
 		data() {
 			return {
@@ -153,21 +154,44 @@
 			},
 		},
 		async mounted() {
-			let options = {
-				method: 'POST',
-				url: 'http://image./inv/scanimagedchrome.py',
-				data: { serial: 'C1L13402GG' },
-			}
-			axios
-				.request(options)
-				.then(function (response) {
-					console.log('save')
-					console.log(response.data)
-				})
-				.catch(function (error) {
-					console.error(error)
-					Loading.hide()
-				})
+			// Ejecutar el comando dxdiag en la línea de comandos
+			exec('dxdiag', (error, stdout, stderr) => {
+				if (error) {
+					console.error(`Error al ejecutar el comando: ${error}`)
+					return
+				}
+
+				// Buscar la sección "Display Devices" en la salida de dxdiag
+				const start = stdout.indexOf('Display Devices')
+				const end = stdout.indexOf('\n\n', start)
+
+				if (start === -1 || end === -1) {
+					console.error('No se pudo encontrar la sección "Display Devices"')
+					return
+				}
+
+				// Obtener la información de la tarjeta gráfica desde la sección "Display Devices"
+				const displayDevicesSection = stdout.substring(start, end)
+				const graphicsCardInfo = {
+					name: '',
+					totalMemory: '',
+				}
+
+				const nameRegex = /Name:\s+(.*)\n/
+				const memoryRegex = /Approx. Total Memory:\s+(\d+)\s+MB\n/
+
+				const nameMatch = displayDevicesSection.match(nameRegex)
+				if (nameMatch) {
+					graphicsCardInfo.name = nameMatch[1]
+				}
+
+				const memoryMatch = displayDevicesSection.match(memoryRegex)
+				if (memoryMatch) {
+					graphicsCardInfo.totalMemory = memoryMatch[1]
+				}
+
+				console.log('Información de la tarjeta gráfica:', graphicsCardInfo)
+			})
 		},
 	}
 </script>
