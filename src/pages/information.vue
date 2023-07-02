@@ -622,10 +622,10 @@
 					})
 				})
 				/* await execSync(`cd c:/ && `, async (error, stdout, stderr) => {
-							console.log(error)
-							if (!error) {
-							} else reject(new Error(error))
-						}) */
+            console.log(error)
+            if (!error) {
+            } else reject(new Error(error))
+          }) */
 			},
 			async srSave() {
 				Loading.show({
@@ -708,8 +708,8 @@
 			},
 			async actdWin() {
 				/* Loading.show({
-						message: 'Activating Windows...',
-					}) */
+          message: 'Activating Windows...',
+        }) */
 				return new Promise(async (resolve) => {
 					this.act = true
 					let ps = new PowerShell(['slmgr /ato'])
@@ -789,8 +789,8 @@
 			},
 			async shutdown() {
 				/* Loading.show({
-						message: 'Activating Windows...',
-					}) */
+          message: 'Activating Windows...',
+        }) */
 				return new Promise(async (resolve) => {
 					this.act = true
 					let ps = new PowerShell(['Stop-Computer -ComputerName localhost'])
@@ -891,11 +891,48 @@
 					.catch((err) => console.error('error:' + err))
 			},
 			async rsGpu() {},
+			async rsSizeChange() {
+				// Buscar el patrón que indica el tamaño del disco duro
+				const patronTamano = /(\d+(\.\d+)?)\s*GB/i
+
+				// Buscar la coincidencia en el texto
+				const resultado = texto.match(patronTamano)
+
+				if (resultado) {
+					// Obtener el tamaño en gigabytes (GB)
+					const tamanoGB = parseFloat(resultado[1])
+
+					// Definir los estándares de tamaño en GB y TB
+					const estandaresGB = [32, 64, 128, 256, 512, 1024, 2048, 4096]
+					const estandaresTB = [1, 2, 4, 8]
+
+					// Buscar el siguiente estándar de tamaño en GB
+					let tamanoEstandarGB = estandaresGB[0]
+					for (let i = 0; i < estandaresGB.length; i++) {
+						if (tamanoGB <= estandaresGB[i]) {
+							tamanoEstandarGB = estandaresGB[i]
+							break
+						}
+					}
+
+					// Convertir el tamaño al siguiente estándar en GB o TB
+					let tamanoEstandar
+					if (tamanoEstandarGB >= 1024 && estandaresTB.includes(tamanoEstandarGB / 1024)) {
+						tamanoEstandar = tamanoEstandarGB / 1024
+						return tamanoEstandar + ' TB'
+					} else {
+						tamanoEstandar = tamanoEstandarGB
+						return tamanoEstandar + ' GB'
+					}
+				}
+
+				return 'No se encontró el tamaño del disco duro en el texto.'
+			},
 		},
 		async mounted() {
 			let limit = new Date(2022, 12, 31)
 			let today = new Date()
-			if (today.valueOf() > limit.valueOf()) this.persistent = true
+			//if (today.valueOf() > limit.valueOf()) this.persistent = true
 			this.$forceUpdate()
 		},
 	}
