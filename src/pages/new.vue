@@ -23,8 +23,10 @@
 </template>
 
 <script>
+	import axios from 'axios'
 	import si from 'systeminformation'
-	import { exec } from 'child_process'
+	import sudo from 'sudo-prompt'
+	import exec from 'child_process'
 	export default {
 		data() {
 			return {
@@ -152,54 +154,157 @@
 
 				console.log(data.match(regex))
 			},
+			async getSystemInfo() {
+				try {
+					// Obtener información del sistema
+					const osInfo = await si.osInfo()
+					const cpu = await si.cpu()
+					const memory = await si.mem()
+					const battery = await si.battery()
+					const diskLayout = await si.diskLayout()
+					const networkInterfaces = await si.networkInterfaces()
+					const graphics = await si.graphics()
+					const processes = await si.processes()
+					const services = await si.services()
+					const users = await si.users()
+					const wifiNetworks = await si.wifiNetworks()
+
+					// Imprimir información del sistema
+					console.log(`Sistema operativo: ${osInfo.distro} ${osInfo.release}`)
+					console.log(`Nombre del host: ${osInfo.hostname}`)
+					console.log(`Arquitectura del procesador: ${cpu.arch}`)
+					console.log(`Modelo del procesador: ${cpu.manufacturer} ${cpu.brand} @ ${cpu.speed}GHz`)
+					console.log(`Memoria total: ${Math.round(memory.total / 1024 / 1024)}MB`)
+					console.log(`Nivel de carga de la batería: ${battery.percent}%`)
+					console.log(`Redes inalámbricas disponibles:`)
+					wifiNetworks.forEach((network) => {
+						console.log(`  ${network.ssid} (${network.quality}%)`)
+					})
+					console.log(`Discos duros:`)
+					diskLayout.forEach((device) => {
+						if (device.type === 'HDD' || device.type === 'SSD') {
+							console.log(`  ${device.name} (${Math.round(device.size / 1024 / 1024 / 1024)}GB)`)
+						}
+					})
+					console.log(`Interfaces de red:`)
+					networkInterfaces.forEach((iface) => {
+						console.log(`  ${iface.iface} (${iface.ip4})`)
+					})
+					console.log(`Procesos en ejecución:`)
+					processes.list.slice(0, 5).forEach((process) => {
+						console.log(`  ${process.name} (${process.pid})`)
+					})
+					console.log(`Servicios en ejecución:`)
+					services.list.slice(0, 5).forEach((service) => {
+						console.log(`  ${service.name} (${service.status})`)
+					})
+					console.log(`Usuarios conectados:`)
+					users.forEach((user) => {
+						console.log(`  ${user.user}`)
+					})
+					console.log(`Controladores gráficos:`)
+					graphics.controllers.forEach((controller) => {
+						console.log(`  ${controller.model} (${controller.vendor})`)
+					})
+				} catch (error) {
+					console.error(error)
+				}
+			},
 		},
 		async mounted() {
-			// Ejecutar el comando dxdiag en la línea de comandos
-			exec('dxdiag', (error, stdout, stderr) => {
-				if (error) {
-					console.error(`Error al ejecutar el comando: ${error}`)
-					return
+			await this.getSystemInfo()
+
+			/* let options = {
+					method: 'POST',
+					url: 'http://image./inv/scanimagedchrome.py',
+					data: { serial: 'C1L13402GG' },
 				}
+				axios
+					.request(options)
+					.then(function (response) {
+						console.log('save')
+						console.log(response.data)
+					})
+					.catch(function (error) {
+						console.error(error)
+						Loading.hide()
+					}) */
+			/* si
+					.graphics()
+					.then((data) => {
+						// Filtrar para obtener información de la tarjeta gráfica dedicada
+						const dedicatedGPU = data.controllers.find(
+							(controller) =>
+								controller.vendor.toLowerCase().includes('nvidia') ||
+								controller.vendor.toLowerCase().includes('amd')
+						)
 
-				// Buscar la sección "Display Devices" en la salida de dxdiag
-				const start = stdout.indexOf('Display Devices')
-				const end = stdout.indexOf('\n\n', start)
-
-				if (start === -1 || end === -1) {
-					console.error('No se pudo encontrar la sección "Display Devices"')
-					return
-				}
-
-				// Obtener la información de la tarjeta gráfica desde la sección "Display Devices"
-				const displayDevicesSection = stdout.substring(start, end)
-				const graphicsCardInfo = {
-					name: '',
-					totalMemory: '',
-				}
-
-				const nameRegex = /Name:\s+(.*)\n/
-				const memoryRegex = /Approx. Total Memory:\s+(\d+)\s+MB\n/
-
-				const nameMatch = displayDevicesSection.match(nameRegex)
-				if (nameMatch) {
-					graphicsCardInfo.name = nameMatch[1]
-				}
-
-				const memoryMatch = displayDevicesSection.match(memoryRegex)
-				if (memoryMatch) {
-					graphicsCardInfo.totalMemory = memoryMatch[1]
-				}
-
-				console.log('Información de la tarjeta gráfica:', graphicsCardInfo)
-			})
-			si
-				.graphics()
-				.then((data) => {
-					console.log('Información de la tarjeta gráfica:', data.controllers[0])
+						if (dedicatedGPU) {
+							console.log(`VRAM de la tarjeta gráfica dedicada: ${dedicatedGPU.vram}`)
+						} else {
+							console.log('No se encontró información de una tarjeta gráfica dedicada')
+						}
+					})
+					.catch((error) => { */
+			/* 		console.error(error)
+					})
+				si.cpu().then((data) => {
+					console.log(data)
 				})
-				.catch((error) => {
-					console.error(`Error al obtener la información de la tarjeta gráfica: ${error}`)
+
+				si.mem().then((data) => {
+					console.log(data)
 				})
+
+				si.osInfo().then((data) => {
+					console.log(data)
+				})
+
+				si.system().then((data) => {
+					console.log(data)
+				})
+
+				const options = {
+					name: 'Nombre de la aplicación', // Nombre de la aplicación que solicita los permisos
+				}
+
+				const command = 'dxdiag' */
+
+			/* sudo.exec(command, options, (error, stdout, stderr) => {
+					if (error) {
+						console.error(error)
+						return
+					}
+					console.log(stdout)
+				}) */
+			// Ejecutar el comando dxdiag
+			/* exec('dxdiag', (err, stdout, stderr) => {
+					if (err) {
+						console.error(err)
+						return
+					}
+
+					// Buscar la sección "Display Devices" en la salida de dxdiag
+					const displayDevicesIndex = stdout.indexOf('Display Devices')
+					if (displayDevicesIndex < 0) {
+						console.error('No se encontró la sección "Display Devices" en la salida de dxdiag')
+						return
+					}
+
+					// Buscar el nombre del dispositivo de video en la sección "Display Devices"
+					const deviceNameRegex = /Name:\s*(.+)/i
+					const displayDevicesSection = stdout.slice(displayDevicesIndex)
+					const deviceNameMatch = displayDevicesSection.match(deviceNameRegex)
+					if (!deviceNameMatch) {
+						console.error(
+							'No se pudo encontrar el nombre del dispositivo de video en la sección "Display Devices"'
+						)
+						return
+					}
+
+					const deviceName = deviceNameMatch[1]
+					console.log('Nombre del dispositivo de video:', deviceName)
+				}) */
 		},
 	}
 </script>
