@@ -10,6 +10,7 @@ const routes = [
 			{ path: 'new', component: () => import('pages/new.vue') },
 			{ path: 'Label', component: () => import('pages/label.vue') },
 			{ path: 'PalletReport', component: () => import('pages/palletReport.vue') },
+			{ path: 'HP', component: () => import('pages/hpInformation.vue') },
 		],
 	},
 

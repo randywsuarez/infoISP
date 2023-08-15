@@ -19,6 +19,7 @@
 					<q-route-tab to="/Testing-return" label="Check Returns" icon="devices" />
 					<q-route-tab to="/label" label="Labels" icon="description" />
 					<q-route-tab to="/PalletReport" label="Pallet Report" icon="list" />
+					<q-route-tab to="/hp" label="HP" icon="list" />
 				</q-tabs>
 				<q-btn round color="black" icon="close" @click="closeApp" />
 			</q-toolbar>
