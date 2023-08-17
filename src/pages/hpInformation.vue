@@ -1,6 +1,6 @@
 <template>
 	<q-page class="bg-grey-10">
-		<div class="row col">
+		<div class="row col" style="align-content: center">
 			<div class="col-9">
 				<q-card bordered class="bg-white-9" style="width: 95vw">
 					<q-card-section>
@@ -14,7 +14,7 @@
 								name="sku"
 								id="sku"
 								label="Model"
-								class="col-lg-5 col-sm-12"
+								class="col-md-5 col-sm-12"
 								v-model="form.sku"
 							/>
 							<q-input
@@ -22,7 +22,7 @@
 								name="serial"
 								id="serial"
 								label="Serial"
-								class="col-lg-5 col-sm-12"
+								class="col-md-5 col-sm-12"
 								v-model="form.serial"
 							/>
 							<q-btn
@@ -30,10 +30,82 @@
 								icon="search"
 								label="Search"
 								@click="fetchData"
-								class="col-lg-2 col-sm-12"
+								class="col-md-2 col-sm-12"
 							/>
 						</div>
 					</q-card-section>
+
+					<div class="col-12" style="justify-content: center">
+						<q-card class="bg-white-8 shadow-up-1 q-ma-md" style="width: 90vw">
+							<q-card-section>
+								<div class="text-h6">{{ product.sku }} - {{ product.Description }}</div>
+							</q-card-section>
+
+							<q-card-section class="row col q-pt-none">
+								<q-card class="" style="width: 90%">
+									<q-card-section horizontal>
+										<q-img class="col-4" :src="product.img" />
+
+										<q-card-section class="col-4">
+											<q-list dense padding class="rounded-borders" style="width: 90%">
+												<q-item>
+													<q-item-section>
+														<q-item-label>type</q-item-label>
+														<q-item-label caption>
+															{{ product.type }}
+														</q-item-label>
+													</q-item-section>
+												</q-item>
+												<q-item>
+													<q-item-section>
+														<q-item-label>Power Supply</q-item-label>
+														<q-item-label caption>
+															{{ product.adapter }}
+														</q-item-label>
+													</q-item-section>
+												</q-item>
+												<q-item>
+													<q-item-section>
+														<q-item-label>Color</q-item-label>
+														<q-item-label caption>
+															{{ product.color }}
+														</q-item-label>
+													</q-item-section>
+												</q-item>
+												<q-item>
+													<q-item-section>
+														<q-item-label>UPC</q-item-label>
+														<q-item-label caption>
+															{{ product.upc }}
+														</q-item-label>
+													</q-item-section>
+												</q-item>
+												<q-item>
+													<q-item-section>
+														<q-item-label>Memory RAM</q-item-label>
+														<q-item-label caption> {{ product.sizeRam }} {{ product.uomHDD }} </q-item-label>
+													</q-item-section>
+												</q-item>
+												<q-item>
+													<q-item-section>
+														<q-item-label>Hard Drive</q-item-label>
+														<q-item-label caption>
+															{{ product.SizeHDD }} {{ product.uomHDD }} {{ product.typeHDD }}
+														</q-item-label>
+													</q-item-section>
+												</q-item>
+											</q-list>
+										</q-card-section>
+										<q-card-section class="col-4">
+											<q-img class="col-4" :src="`${product.tip}.png`" style="width: 50%" />
+										</q-card-section>
+									</q-card-section>
+
+									<q-separator />
+								</q-card>
+							</q-card-section>
+						</q-card>
+					</div>
 				</q-card>
 			</div>
 		</div>
